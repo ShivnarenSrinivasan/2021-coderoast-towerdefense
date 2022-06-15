@@ -154,13 +154,6 @@ class Map:
                 )  # creates a grid of Blocks
                 blockGrid[x][y].paint(self.drawnMap)
 
-    def saveMap(self):
-        self.mapFile = open("firstMap.txt", "w")
-        for y in range(gridSize):
-            for x in range(gridSize):
-                self.mapFile.write(blockGrid[x][y].blockType + " ")
-        self.mapFile.close()
-
     def update(self):
         pass
 
