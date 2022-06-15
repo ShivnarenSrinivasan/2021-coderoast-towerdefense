@@ -10,7 +10,7 @@ class GameObject(Protocol):
         """Paints the game."""
 
 
-class Game:  # the main class that we call "Game"
+class Game:
     def __init__(
         self, title: str, width: int, height: int, timestep: int = 50
     ):  # setting up the window for the game here

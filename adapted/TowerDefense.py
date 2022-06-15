@@ -151,7 +151,7 @@ class Map:
                     block_num,
                     x,
                     y,
-                )  # creates a grid of Blocks
+                )
                 blockGrid[x][y].paint(self.drawnMap)
 
     def update(self):
