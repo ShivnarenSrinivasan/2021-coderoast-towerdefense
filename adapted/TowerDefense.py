@@ -173,14 +173,13 @@ class Wavegenerator:
         self.maxTicks = 2
         self.waveFile = open("texts/waveTexts/WaveGenerator2.txt", "r")
 
-    def getWave(self):
+    def getWave(self) -> None:
         self.game.set_state(TowerDefenseGameState.SPAWNING)
         self.currentMonster = 1
-        self.waveLine = self.waveFile.readline()
-        if len(self.waveLine) == 0:
+        wave_line = self.waveFile.readline()
+        if len(wave_line) == 0:
             return
-        self.currentWave = self.waveLine.split()
-        self.currentWave = list(map(int, self.currentWave))
+        self.currentWave = list(map(int, wave_line.split()))
         self.maxTicks = self.currentWave[0]
 
     def findSpawn(self):
