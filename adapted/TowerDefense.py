@@ -587,7 +587,7 @@ class Mouse:
                 self.pressed, self.x - self.xoffset, self.y - self.yoffset
             )
 
-    def paint(self, canvas):
+    def paint(self, canvas: tk.Canvas):
         if (
             self.gridx >= 0
             and self.gridx <= gridSize - 1
@@ -636,7 +636,7 @@ class Projectile:
         self.target.health -= self.damage
         projectiles.remove(self)
 
-    def paint(self, canvas):
+    def paint(self, canvas: tk.Canvas):
         canvas.create_image(self.x, self.y, image=self.image)
 
 
