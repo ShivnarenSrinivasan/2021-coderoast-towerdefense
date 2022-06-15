@@ -324,7 +324,7 @@ class NextWaveButton:
         canvas.create_text(500, 37, text="Next Wave")
 
 
-class TargetButton(buttons.MyButton):
+class TargetButton(buttons.Button):
     def __init__(self, x, y, xTwo, yTwo, myType):
         super(TargetButton, self).__init__(x, y, xTwo, yTwo)
         self.type = myType
@@ -334,7 +334,7 @@ class TargetButton(buttons.MyButton):
         displayTower.targetList = self.type
 
 
-class StickyButton(buttons.MyButton):
+class StickyButton(buttons.Button):
 
     def pressed(self):
         global displayTower
@@ -344,7 +344,7 @@ class StickyButton(buttons.MyButton):
             displayTower.stickyTarget = False
 
 
-class SellButton(buttons.MyButton):
+class SellButton(buttons.Button):
 
     def pressed(self):
         global displayTower
@@ -354,7 +354,7 @@ class SellButton(buttons.MyButton):
         displayTower = None
 
 
-class UpgradeButton(buttons.MyButton):
+class UpgradeButton(buttons.Button):
 
     def pressed(self):
         global money
@@ -372,7 +372,7 @@ class Infoboard:
         self.canvas.grid(row=0, column=1)
         self.image = ImageTk.PhotoImage(Image.open("images/infoBoard.png"))
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
-        self.currentButtons = []
+        self.currentButtons: list[buttons.Button] = []
 
     def buttonsCheck(self, click, x, y):
         if click:

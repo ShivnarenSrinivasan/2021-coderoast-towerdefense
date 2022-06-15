@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class MyButton(ABC):
+class Button(ABC):
     """Generic Button."""
 
     def __init__(self, x, y, xTwo, yTwo):
