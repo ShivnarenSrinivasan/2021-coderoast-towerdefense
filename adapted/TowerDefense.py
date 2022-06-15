@@ -116,8 +116,10 @@ class TowerDefenseGame(Game):
 
         for monster in _sort_distance(monsters):
             monster.paint(self.canvas)
-        for i in range(len(projectiles)):
-            projectiles[i].paint(self.canvas)
+
+        for projectile in projectiles:
+            projectile.paint(self.canvas)
+
         if displayTower:
             displayTower.paintSelect(self.canvas)
         self.displayboard.paint()
