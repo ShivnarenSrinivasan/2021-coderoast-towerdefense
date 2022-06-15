@@ -19,9 +19,7 @@ gridSize = 30  # the height and width of the array of blocks
 blockSize = 20  # pixels wide of each block
 mapSize = gridSize * blockSize
 
-blockGrid: list[list[Block | None]] = [
-    [None for _ in range(gridSize)] for _ in range(gridSize)
-]
+blockGrid: list[list[Block]] = []
 
 blockDictionary = ["NormalBlock", "PathBlock", "WaterBlock"]
 towerDictionary = {
@@ -141,18 +139,21 @@ class Map:
         self.image = ImageTk.PhotoImage(self.image)
 
     def _reset_grid(self):
-        for y in range(gridSize):
-            for x in range(gridSize):
-                global blockGrid
+        blockGrid.clear()
+        for x in range(gridSize):
+            row: list[Block] = []
+            for y in range(gridSize):
                 block_num = self.gridValues[gridSize * y + x]
-                blockGrid[x][y] = block_factory(
+                block = block_factory(
                     x * blockSize + blockSize / 2,
                     y * blockSize + blockSize / 2,
                     block_num,
                     x,
                     y,
                 )
-                blockGrid[x][y].paint(self.drawnMap)
+                block.paint(self.drawnMap)
+                row.append(block)
+            blockGrid.append(row)
 
     def update(self):
         pass
