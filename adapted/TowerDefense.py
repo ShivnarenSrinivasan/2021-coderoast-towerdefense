@@ -473,7 +473,7 @@ class Infoboard:
 
 
 class Displayboard:
-    def __init__(self, game):
+    def __init__(self, game: TowerDefenseGame):
         self.canvas = tk.Canvas(
             master=game.frame, width=600, height=80, bg="gray", highlightthickness=0
         )
@@ -495,7 +495,7 @@ class Displayboard:
 
 
 class Towerbox:
-    def __init__(self, game):
+    def __init__(self, game: TowerDefenseGame):
         self.game = game
         self.box = tk.Listbox(
             master=game.frame,
