@@ -373,7 +373,9 @@ class SellButton(MyButton):
 
     def pressed(self):
         global displayTower
-        displayTower.sold()
+        if displayTower is None:
+            raise TypeError('Display Tower should be of type <Tower>')
+        displayTower.sold(tower_map)
         displayTower = None
 
 
