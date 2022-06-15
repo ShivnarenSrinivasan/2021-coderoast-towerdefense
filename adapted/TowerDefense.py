@@ -374,12 +374,14 @@ class Infoboard:
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.currentButtons: list[buttons.Button] = []
 
-    def buttonsCheck(self, click, x, y):
-        if click:
-            for i in range(len(self.currentButtons)):
-                if self.currentButtons[i].checkPress(click, x, y):
-                    self.displaySpecific()
-                    return
+    def buttonsCheck(self, click: bool, x: int, y: int) -> None:
+        if not click:
+            return None
+
+        for btn in self.currentButtons:
+            if btn.checkPress(x, y):
+                self.displaySpecific()
+                return None
 
     def displaySpecific(self):
         self.canvas.delete(tk.ALL)  # clear the screen

@@ -10,7 +10,7 @@ class Button(ABC):
         self.xTwo = xTwo
         self.yTwo = yTwo
 
-    def checkPress(self, click, x, y):
+    def checkPress(self, x: int, y: int):
         if x >= self.x and y >= self.y and x <= self.xTwo and y <= self.yTwo:
             self.pressed()
             return True
