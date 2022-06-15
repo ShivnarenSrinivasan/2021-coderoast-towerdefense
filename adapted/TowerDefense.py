@@ -30,12 +30,7 @@ towerDictionary = {
     "Tack Tower": "TackTower",
     "Power Tower": "PowerTower",
 }
-towerCost = {
-    "Arrow Shooter": 150,
-    "Bullet Shooter": 150,
-    "Tack Tower": 150,
-    "Power Tower": 200,
-}
+
 tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
 spawnx = 0
@@ -460,7 +455,7 @@ class Infoboard:
             self.text = None
             self.towerImage = None
         else:
-            self.text = selectedTower + " cost: " + str(towerCost[selectedTower])
+            self.text = selectedTower + " cost: " + str(tower.cost(selectedTower))
             self.towerImage = ImageTk.PhotoImage(
                 Image.open(
                     "images/towerImages/" + towerDictionary[selectedTower] + "/1.png"
@@ -1092,21 +1087,21 @@ class Block(object):
         global money
         point = grid.Point(self.gridx, self.gridy)
         if point in tower_map:
-            tower = tower_map[point]
+            _tower = tower_map[point]
             if selectedTower == "<None>":
-                tower.clicked = True
+                _tower.clicked = True
                 global displayTower
-                displayTower = tower
+                displayTower = _tower
                 game.infoboard.displaySpecific()
         elif (
             selectedTower != "<None>"
             and self.canPlace == True
-            and money >= towerCost[selectedTower]
+            and money >= tower.cost(selectedTower)
         ):
             tower_map[point] = tower_factory(
                 selectedTower, self.x, self.y, self.gridx, self.gridy
             )
-            money -= towerCost[selectedTower]
+            money -= tower.cost(selectedTower)
 
     def update(self):
         pass

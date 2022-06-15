@@ -74,3 +74,13 @@ class ShootingTower(Tower):
     @abstractmethod
     def prepareShot(self) -> None:
         ...
+
+
+def cost(tower: str) -> int:
+    _costs = {
+        "Arrow Shooter": 150,
+        "Bullet Shooter": 150,
+        "Tack Tower": 150,
+        "Power Tower": 200,
+    }
+    return _costs[tower]
