@@ -162,7 +162,7 @@ class Map:
     def update(self):
         pass
 
-    def paint(self, canvas):
+    def paint(self, canvas: tk.Canvas) -> None:
         canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
 
 
