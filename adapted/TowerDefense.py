@@ -1,5 +1,4 @@
-# IMPORTANT INFORMATION: the use of 'self' ALWAYS refers to the class that it is in. EVERY FUNCTION INSIDE OF A CLASS MUST DECLARE SELF! ex: 'def exampleFunction(self, input1, input2):
-
+from __future__ import annotations
 import math
 import random
 from enum import Enum, auto
@@ -7,14 +6,17 @@ from tkinter import *
 
 from PIL import Image, ImageDraw, ImageTk
 
+import helpers as H
 from game import Game
 
 gridSize = 30  # the height and width of the array of blocks
 blockSize = 20  # pixels wide of each block
 mapSize = gridSize * blockSize
-blockGrid = [
-    [0 for y in range(gridSize)] for x in range(gridSize)
-]  # creates the array for the grid
+
+blockGrid: list[list[Block | None]] = [
+    [None for _ in range(gridSize)] for _ in range(gridSize)
+]
+
 blockDictionary = ["NormalBlock", "PathBlock", "WaterBlock"]
 monsterDictionary = [
     "Monster1",
@@ -86,11 +88,11 @@ class TowerDefenseGame(Game):
         self.displayboard.update()
         for p in projectiles:
             p.update()
-        for y in range(gridSize):
-            for x in range(gridSize):
-                blockGrid[x][
-                    y
-                ].update()  # updates each block one by one by going to its 'def update():' command
+
+        for block in H.grid_iter(blockGrid):
+            if block is not None:
+                block.update()
+
         for m in monsters:
             m.update()
         global monstersByHealth
