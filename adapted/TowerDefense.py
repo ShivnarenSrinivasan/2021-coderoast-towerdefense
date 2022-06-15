@@ -365,8 +365,8 @@ class UpgradeButton(buttons.MyButton):
 
 
 class Infoboard:
-    def __init__(self, game):
-        self.canvas = Canvas(
+    def __init__(self, game: TowerDefenseGame):
+        self.canvas = tk.Canvas(
             master=game.frame, width=162, height=174, bg="gray", highlightthickness=0
         )
         self.canvas.grid(row=0, column=1)
@@ -486,7 +486,7 @@ class Displayboard:
 class Towerbox:
     def __init__(self, game):
         self.game = game
-        self.box = Listbox(
+        self.box = tk.Listbox(
             master=game.frame,
             selectmode="SINGLE",
             font=("times", 18),
