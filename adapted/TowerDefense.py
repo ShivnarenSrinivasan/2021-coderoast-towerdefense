@@ -694,12 +694,12 @@ class AngledProjectile(Projectile):
         self.distance = 0
 
     def checkHit(self):
-        for i in range(len(monsters)):
-            if (monsters[i].x - self.x) ** 2 + (monsters[i].y - self.y) ** 2 <= (
+        for monster in monsters:
+            if (monster.x - self.x) ** 2 + (monster.y - self.y) ** 2 <= (
                 blockSize
             ) ** 2:
                 self.hit = True
-                self.target = monsters[i]
+                self.target = monster
                 return
 
     def gotMonster(self):
@@ -727,15 +727,18 @@ class TargetingTower(tower.ShootingTower):
         self.stickyTarget = False
 
     def prepareShot(self):
-        self.checkList = gen_monsters_list(monsters)[self.targetList]
+        monster_list = gen_monsters_list(monsters)[self.targetList]
+
         if self.ticks != 20 / self.bulletsPerSecond:
             self.ticks += 1
-        if self.stickyTarget == False:
-            for i in range(len(self.checkList)):
+
+        if not self.stickyTarget:
+            for monster in monster_list:
                 if (self.range + blockSize / 2) ** 2 >= (
-                    self.x - self.checkList[i].x
-                ) ** 2 + (self.y - self.checkList[i].y) ** 2:
-                    self.target = self.checkList[i]
+                    self.x - monster.x
+                ) ** 2 + (self.y - monster.y) ** 2:
+                    self.target = monster
+
         if self.target:
             if (
                 self.target.alive
@@ -748,12 +751,12 @@ class TargetingTower(tower.ShootingTower):
                     self.ticks = 0
             else:
                 self.target = None
-        elif self.stickyTarget == True:
-            for i in range(len(self.checkList)):
+        elif self.stickyTarget:
+            for monster in monster_list:
                 if (self.range + blockSize / 2) ** 2 >= (
-                    self.x - self.checkList[i].x
-                ) ** 2 + (self.y - self.checkList[i].y) ** 2:
-                    self.target = self.checkList[i]
+                    self.x - monster.x
+                ) ** 2 + (self.y - monster.y) ** 2:
+                    self.target = monster
 
 
 class ArrowShooterTower(TargetingTower):
