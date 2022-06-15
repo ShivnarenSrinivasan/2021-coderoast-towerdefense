@@ -310,7 +310,7 @@ class NextWaveButton:
             return
         self.game.set_state(TowerDefenseGameState.WAIT_FOR_SPAWN)
 
-    def paint(self, canvas: Canvas):
+    def paint(self, canvas: tk.Canvas) -> None:
         if self.is_idle and len(monsters) == 0:
             self.color = "blue"
         else:
