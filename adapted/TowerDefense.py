@@ -105,14 +105,14 @@ class TowerDefenseGame(Game):
         for m in monsters:
             m.update()
 
-        for tower in tower_map.values():
-            tower.update()
+        for _tower in tower_map.values():
+            _tower.update()
 
     def paint(self):
         super().paint()
 
-        for tower in tower_map.values():
-            tower.paint(self.canvas)
+        for _tower in tower_map.values():
+            _tower.paint(self.canvas)
 
         for monster in _sort_distance(monsters):
             monster.paint(self.canvas)
