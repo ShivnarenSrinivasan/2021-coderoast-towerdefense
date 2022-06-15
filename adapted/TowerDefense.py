@@ -8,7 +8,6 @@ from tkinter import *
 
 from PIL import Image, ImageDraw, ImageTk
 
-import helpers as H
 import buttons
 import display
 import grid
@@ -92,7 +91,7 @@ class TowerDefenseGame(Game):
         for p in projectiles:
             p.update()
 
-        for block in H.grid_iter(blockGrid):
+        for block in grid.grid_iter(blockGrid):
             if block is not None:
                 block.update()
 
