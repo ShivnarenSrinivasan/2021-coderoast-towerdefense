@@ -9,6 +9,7 @@ from tkinter import *
 from PIL import Image, ImageDraw, ImageTk
 
 import helpers as H
+import display
 import grid
 import tower
 from game import Game
@@ -489,14 +490,14 @@ class Displayboard:
             master=game.frame, width=600, height=80, bg="gray", highlightthickness=0
         )
         self.canvas.grid(row=2, column=0)
-        self.healthbar = Healthbar()
-        self.moneybar = Moneybar()
+        self.healthbar = display.Healthbar(health)
+        self.moneybar = display.Moneybar(money)
         self.nextWaveButton = NextWaveButton(game)
         self.paint()
 
     def update(self):
-        self.healthbar.update()
-        self.moneybar.update()
+        self.healthbar.update(health)
+        self.moneybar.update(money)
 
     def paint(self):
         self.canvas.delete(tk.ALL)  # clear the screen
@@ -630,26 +631,6 @@ class Mouse:
                 )
 
 
-class Healthbar:
-    def __init__(self):
-        self.text = str(health)
-
-    def update(self):
-        self.text = str(health)
-
-    def paint(self, canvas):
-        canvas.create_text(40, 40, text="Health: " + self.text, fill="black")
-
-
-class Moneybar:
-    def __init__(self):
-        self.text = str(money)
-
-    def update(self):
-        self.text = str(money)
-
-    def paint(self, canvas):
-        canvas.create_text(240, 40, text="Money: " + self.text, fill="black")
 
 
 class Projectile:
