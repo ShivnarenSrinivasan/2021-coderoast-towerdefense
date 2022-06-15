@@ -8,6 +8,7 @@ from PIL import Image, ImageDraw, ImageTk
 
 import helpers as H
 import grid
+import tower
 from game import Game
 
 gridSize = 30  # the height and width of the array of blocks
@@ -39,7 +40,7 @@ towerCost = {
     "Tack Tower": 150,
     "Power Tower": 200,
 }
-tower_map: dict[grid.Point, Tower] = {}
+tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
 spawnx = 0
 spawny = 0
@@ -776,67 +777,7 @@ class AngledProjectile(Projectile):
                 pass
 
 
-class Tower(object):
-    def __init__(self, x, y, gridx, gridy):
-        self.upgradeCost = None
-        self.level = 1
-        self.range = 0
-        self.clicked = False
-        self.x = x
-        self.y = y
-        self.gridx = gridx
-        self.gridy = gridy
-        self.image = Image.open(
-            "images/towerImages/" + self.__class__.__name__ + "/1.png"
-        )
-        self.image = ImageTk.PhotoImage(self.image)
-
-    def update(self):
-        pass
-
-    def upgrade(self):
-        self.level = self.level + 1
-        self.image = Image.open(
-            "images/towerImages/"
-            + self.__class__.__name__
-            + "/"
-            + str(self.level)
-            + ".png"
-        )
-        self.image = ImageTk.PhotoImage(self.image)
-        self.nextLevel()
-
-    def sold(self) -> None:
-        point = grid.Point(self.gridx, self.gridy)
-        tower_map.pop(point)
-
-    def paintSelect(self, canvas):
-        canvas.create_oval(
-            self.x - self.range,
-            self.y - self.range,
-            self.x + self.range,
-            self.y + self.range,
-            fill=None,
-            outline="white",
-        )
-
-    def paint(self, canvas):
-        canvas.create_image(self.x, self.y, image=self.image, anchor=CENTER)
-
-
-class ShootingTower(Tower):
-    def __init__(self, x, y, gridx, gridy):
-        super(ShootingTower, self).__init__(x, y, gridx, gridy)
-        self.bulletsPerSecond = None
-        self.ticks = 0
-        self.damage = 0
-        self.speed = None
-
-    def update(self):
-        self.prepareShot()
-
-
-class TargetingTower(ShootingTower):
+class TargetingTower(tower.ShootingTower):
     def __init__(self, x, y, gridx, gridy):
         super(TargetingTower, self).__init__(x, y, gridx, gridy)
         self.target = None
@@ -922,6 +863,9 @@ class BulletShooterTower(TargetingTower):
             TrackingBullet(self.x, self.y, self.damage, self.speed, self.target)
         )
 
+    def nextLevel(self) -> None:
+        ...
+
 
 class PowerTower(TargetingTower):
     def __init__(self, x, y, gridx, gridy):
@@ -938,6 +882,9 @@ class PowerTower(TargetingTower):
         projectiles.append(
             PowerShot(self.x, self.y, self.damage, self.speed, self.target, self.slow)
         )
+
+    def nextLevel(self) -> None:
+        ...
 
 
 class TackTower(TargetingTower):
@@ -958,6 +905,22 @@ class TackTower(TargetingTower):
                     self.x, self.y, self.damage, self.speed, self.angle, self.range
                 )
             )
+
+    def nextLevel(self) -> None:
+        ...
+
+
+def tower_factory(
+    tower: str, x: float, y: float, gridx: int, gridy: int
+) -> tower.Tower:
+    towers = {
+        "Arrow Shooter": ArrowShooterTower,
+        "Bullet Shooter": BulletShooterTower,
+        "Tack Tower": TackTower,
+        "Power Tower": PowerTower,
+    }
+    _tower = towers[tower]
+    return _tower(x, y, gridx, gridy)
 
 
 class Monster(object):
@@ -1179,9 +1142,8 @@ class Block(object):
                 and self.canPlace == True
                 and money >= towerCost[selectedTower]
             ):
-                self.towerType = globals()[towerDictionary[selectedTower]]
-                tower_map[point] = self.towerType(
-                    self.x, self.y, self.gridx, self.gridy
+                tower_map[point] = tower_factory(
+                    selectedTower, self.x, self.y, self.gridx, self.gridy
                 )
                 money -= towerCost[selectedTower]
 
