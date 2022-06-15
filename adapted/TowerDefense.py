@@ -7,6 +7,7 @@ from tkinter import *
 from PIL import Image, ImageDraw, ImageTk
 
 import helpers as H
+import grid
 from game import Game
 
 gridSize = 30  # the height and width of the array of blocks
@@ -38,7 +39,7 @@ towerCost = {
     "Tack Tower": 150,
     "Power Tower": 200,
 }
-towerGrid = [[None for y in range(gridSize)] for x in range(gridSize)]
+tower_map: dict[grid.Point, Tower] = {}
 pathList = []
 spawnx = 0
 spawny = 0
@@ -117,19 +118,15 @@ class TowerDefenseGame(Game):
             monstersByDistanceReversed,
         ]
 
-        for y in range(gridSize):
-            for x in range(gridSize):
-                if towerGrid[x][y]:
-                    towerGrid[x][
-                        y
-                    ].update()  # updates each tower one by one by going to its 'def update():' command
+        for tower in tower_map.values():
+            tower.update()
 
     def paint(self):
         super().paint()
-        for y in range(gridSize):
-            for x in range(gridSize):
-                if towerGrid[x][y]:
-                    towerGrid[x][y].paint(self.canvas)
+
+        for tower in tower_map.values():
+            tower.paint(self.canvas)
+
         for i in range(len(monstersByDistanceReversed)):
             monstersByDistanceReversed[i].paint(self.canvas)
         for i in range(len(projectiles)):
@@ -809,8 +806,9 @@ class Tower(object):
         self.image = ImageTk.PhotoImage(self.image)
         self.nextLevel()
 
-    def sold(self):
-        towerGrid[self.gridx][self.gridy] = None
+    def sold(self) -> None:
+        point = grid.Point(self.gridx, self.gridy)
+        tower_map.pop(point)
 
     def paintSelect(self, canvas):
         canvas.create_oval(
@@ -1167,13 +1165,14 @@ class Block(object):
 
     def hoveredOver(self, click, game):
         if click == True:
-            global towerGrid
             global money
-            if towerGrid[self.gridx][self.gridy]:
+            point = grid.Point(self.gridx, self.gridy)
+            if point in tower_map:
+                tower = tower_map[point]
                 if selectedTower == "<None>":
-                    towerGrid[self.gridx][self.gridy].clicked = True
+                    tower.clicked = True
                     global displayTower
-                    displayTower = towerGrid[self.gridx][self.gridy]
+                    displayTower = tower
                     game.infoboard.displaySpecific()
             elif (
                 selectedTower != "<None>"
@@ -1181,7 +1180,7 @@ class Block(object):
                 and money >= towerCost[selectedTower]
             ):
                 self.towerType = globals()[towerDictionary[selectedTower]]
-                towerGrid[self.gridx][self.gridy] = self.towerType(
+                tower_map[point] = self.towerType(
                     self.x, self.y, self.gridx, self.gridy
                 )
                 money -= towerCost[selectedTower]
