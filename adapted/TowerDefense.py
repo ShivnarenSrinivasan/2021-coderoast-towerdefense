@@ -88,6 +88,10 @@ class TowerDefenseGame(Game):
         self.add_object(Mouse(self))
         self.add_object(Wavegenerator(self))
 
+    @property
+    def is_idle(self) -> bool:
+        return self.state is TowerDefenseGameState.IDLE
+
     def update(self):
         super().update()
         self.displayboard.update()
@@ -292,16 +296,12 @@ class NextWaveButton:
         self.xTwo = 550
         self.yTwo = 50
 
-    @property
-    def is_idle(self) -> bool:
-        return self.game.state is TowerDefenseGameState.IDLE
-
     def is_within_bounds(self, x: int, y: int) -> bool:
         return self.x <= x <= self.xTwo and self.y <= y <= self.yTwo
 
     @property
     def can_spawn(self) -> bool:
-        return self.is_idle and len(monsters) == 0
+        return self.game.is_idle and len(monsters) == 0
 
     def checkPress(self, click: bool, x: int, y: int):
         if not self.is_within_bounds(x, y):
@@ -311,7 +311,7 @@ class NextWaveButton:
         self.game.set_state(TowerDefenseGameState.WAIT_FOR_SPAWN)
 
     def paint(self, canvas: tk.Canvas) -> None:
-        if self.is_idle and len(monsters) == 0:
+        if self.game.is_idle and len(monsters) == 0:
             self.color = "blue"
         else:
             self.color = "red"
