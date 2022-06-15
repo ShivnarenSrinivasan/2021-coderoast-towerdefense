@@ -2,6 +2,8 @@ from __future__ import annotations
 import math
 import random
 from enum import Enum, auto
+
+import tkinter as tk
 from tkinter import *
 
 from PIL import Image, ImageDraw, ImageTk
@@ -156,7 +158,7 @@ class Map:
         pass
 
     def paint(self, canvas):
-        canvas.create_image(0, 0, image=self.image, anchor=NW)
+        canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
 
 
 class Wavegenerator:
@@ -391,7 +393,7 @@ class Infoboard:
         )
         self.canvas.grid(row=0, column=1)
         self.image = ImageTk.PhotoImage(Image.open("images/infoBoard.png"))
-        self.canvas.create_image(0, 0, image=self.image, anchor=NW)
+        self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.currentButtons = []
 
     def buttonsCheck(self, click, x, y):
@@ -402,8 +404,8 @@ class Infoboard:
                     return
 
     def displaySpecific(self):
-        self.canvas.delete(ALL)  # clear the screen
-        self.canvas.create_image(0, 0, image=self.image, anchor=NW)
+        self.canvas.delete(tk.ALL)  # clear the screen
+        self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.currentButtons = []
         if displayTower == None:
             return
@@ -418,28 +420,28 @@ class Infoboard:
             )
         )
         self.canvas.create_text(80, 75, text=displayTower.name, font=("times", 20))
-        self.canvas.create_image(5, 5, image=self.towerImage, anchor=NW)
+        self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
         if issubclass(displayTower.__class__, TargetingTower):
 
             self.currentButtons.append(TargetButton(26, 30, 35, 39, 0))
             self.canvas.create_text(
-                37, 28, text="> Health", font=("times", 12), fill="white", anchor=NW
+                37, 28, text="> Health", font=("times", 12), fill="white", anchor=tk.NW
             )
 
             self.currentButtons.append(TargetButton(26, 50, 35, 59, 1))
             self.canvas.create_text(
-                37, 48, text="< Health", font=("times", 12), fill="white", anchor=NW
+                37, 48, text="< Health", font=("times", 12), fill="white", anchor=tk.NW
             )
 
             self.currentButtons.append(TargetButton(92, 50, 101, 59, 2))
             self.canvas.create_text(
-                103, 48, text="> Distance", font=("times", 12), fill="white", anchor=NW
+                103, 48, text="> Distance", font=("times", 12), fill="white", anchor=tk.NW
             )
 
             self.currentButtons.append(TargetButton(92, 30, 101, 39, 3))
             self.canvas.create_text(
-                103, 28, text="< Distance", font=("times", 12), fill="white", anchor=NW
+                103, 28, text="< Distance", font=("times", 12), fill="white", anchor=tk.NW
             )
 
             self.currentButtons.append(StickyButton(10, 40, 19, 49))
@@ -452,11 +454,11 @@ class Infoboard:
                     text="Upgrade: " + str(displayTower.upgradeCost),
                     font=("times", 12),
                     fill="light green",
-                    anchor=CENTER,
+                    anchor=tk.CENTER,
                 )
 
             self.canvas.create_text(
-                28, 146, text="Sell", font=("times", 22), fill="light green", anchor=NW
+                28, 146, text="Sell", font=("times", 22), fill="light green", anchor=tk.NW
             )
 
             self.currentButtons[displayTower.targetList].paint(self.canvas)
@@ -475,10 +477,10 @@ class Infoboard:
                     "images/towerImages/" + towerDictionary[selectedTower] + "/1.png"
                 )
             )
-        self.canvas.delete(ALL)  # clear the screen
-        self.canvas.create_image(0, 0, image=self.image, anchor=NW)
+        self.canvas.delete(tk.ALL)  # clear the screen
+        self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.canvas.create_text(80, 75, text=self.text)
-        self.canvas.create_image(5, 5, image=self.towerImage, anchor=NW)
+        self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
 
 class Displayboard:
@@ -497,7 +499,7 @@ class Displayboard:
         self.moneybar.update()
 
     def paint(self):
-        self.canvas.delete(ALL)  # clear the screen
+        self.canvas.delete(tk.ALL)  # clear the screen
         self.healthbar.paint(self.canvas)
         self.moneybar.paint(self.canvas)
         self.nextWaveButton.paint(self.canvas)
@@ -517,11 +519,11 @@ class Towerbox:
             bd=1,
             highlightthickness=0,
         )
-        self.box.insert(END, "<None>")
+        self.box.insert(tk.END, "<None>")
         for i in towerDictionary:
-            self.box.insert(END, i)
+            self.box.insert(tk.END, i)
         for i in range(50):
-            self.box.insert(END, "<None>")
+            self.box.insert(tk.END, "<None>")
         self.box.grid(row=1, column=1, rowspan=2)
         self.box.bind("<<ListboxSelect>>", self.onselect)
 
@@ -617,14 +619,14 @@ class Mouse:
                     self.gridx * blockSize,
                     self.gridy * blockSize,
                     image=self.image,
-                    anchor=NW,
+                    anchor=tk.NW,
                 )
             else:
                 canvas.create_image(
                     self.gridx * blockSize,
                     self.gridy * blockSize,
                     image=self.canNotPressImage,
-                    anchor=NW,
+                    anchor=tk.NW,
                 )
 
 
@@ -995,7 +997,7 @@ class Monster(object):
             fill="green",
             outline="green",
         )
-        canvas.create_image(self.x, self.y, image=self.image, anchor=CENTER)
+        canvas.create_image(self.x, self.y, image=self.image, anchor=tk.CENTER)
 
 
 class Monster1(Monster):
