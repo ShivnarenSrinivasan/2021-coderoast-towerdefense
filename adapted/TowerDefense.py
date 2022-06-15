@@ -133,22 +133,26 @@ class Map:
         self.drawnMap = Image.new("RGBA", (mapSize, mapSize), (255, 255, 255, 255))
         self.mapFile = open("texts/mapTexts/" + mapName + ".txt", "r")
         self.gridValues = list(map(int, (self.mapFile.read()).split()))
+
+        self._reset_grid()
+
+        self.drawnMap.save("images/mapImages/" + mapName + ".png")
+        self.image = Image.open("images/mapImages/" + mapName + ".png")
+        self.image = ImageTk.PhotoImage(self.image)
+
+    def _reset_grid(self):
         for y in range(gridSize):
             for x in range(gridSize):
                 global blockGrid
-                self.blockNumber = self.gridValues[gridSize * y + x]
-                self.blockType = globals()[blockDictionary[self.blockNumber]]
-                blockGrid[x][y] = self.blockType(
+                block_num = self.gridValues[gridSize * y + x]
+                blockGrid[x][y] = block_factory(
                     x * blockSize + blockSize / 2,
                     y * blockSize + blockSize / 2,
-                    self.blockNumber,
+                    block_num,
                     x,
                     y,
                 )  # creates a grid of Blocks
                 blockGrid[x][y].paint(self.drawnMap)
-        self.drawnMap.save("images/mapImages/" + mapName + ".png")
-        self.image = Image.open("images/mapImages/" + mapName + ".png")
-        self.image = ImageTk.PhotoImage(self.image)
 
     def saveMap(self):
         self.mapFile = open("firstMap.txt", "w")
@@ -1130,3 +1134,13 @@ class WaterBlock(Block):
     def __init__(self, x, y, blockNumber, gridx, gridy):
         super(WaterBlock, self).__init__(x, y, blockNumber, gridx, gridy)
         self.canPlace = False
+
+
+def block_factory(x: float, y: float, block_num: int, gridx: int, gridy: int) -> Block:
+    blocks = (
+        NormalBlock,
+        PathBlock,
+        WaterBlock,
+    )
+    BlockType = blocks[block_num]
+    return BlockType(x, y, block_num, gridx, gridy)
