@@ -486,7 +486,7 @@ class Infoboard:
 
 class Displayboard:
     def __init__(self, game):
-        self.canvas = Canvas(
+        self.canvas = tk.Canvas(
             master=game.frame, width=600, height=80, bg="gray", highlightthickness=0
         )
         self.canvas.grid(row=2, column=0)
