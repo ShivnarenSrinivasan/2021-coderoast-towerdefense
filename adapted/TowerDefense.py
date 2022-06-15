@@ -140,19 +140,23 @@ class Map:
 
     def _reset_grid(self):
         blockGrid.clear()
+
+        def make_block(x: int, y: int) -> Block:
+            block_num = self.gridValues[gridSize * y + x]
+            block = block_factory(
+                x * blockSize + blockSize / 2,
+                y * blockSize + blockSize / 2,
+                block_num,
+                x,
+                y,
+            )
+            block.paint(self.drawnMap)
+            return block
+
         for x in range(gridSize):
             row: list[Block] = []
             for y in range(gridSize):
-                block_num = self.gridValues[gridSize * y + x]
-                block = block_factory(
-                    x * blockSize + blockSize / 2,
-                    y * blockSize + blockSize / 2,
-                    block_num,
-                    x,
-                    y,
-                )
-                block.paint(self.drawnMap)
-                row.append(block)
+                row.append(make_block(x, y))
             blockGrid.append(row)
 
     def update(self):
