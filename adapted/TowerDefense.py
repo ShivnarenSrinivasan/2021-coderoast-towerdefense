@@ -20,14 +20,6 @@ blockGrid: list[list[Block | None]] = [
 ]
 
 blockDictionary = ["NormalBlock", "PathBlock", "WaterBlock"]
-monsterDictionary = [
-    "Monster1",
-    "Monster2",
-    "AlexMonster",
-    "BenMonster",
-    "LeoMonster",
-    "MonsterBig",
-]
 towerDictionary = {
     "Arrow Shooter": "ArrowShooterTower",
     "Bullet Shooter": "BulletShooterTower",
@@ -44,17 +36,25 @@ tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
 spawnx = 0
 spawny = 0
-monsters = []
-monstersByHealth = []
-monstersByHealthReversed = []
-monstersByDistance = []
-monstersByDistanceReversed = []
-monstersListList = [
-    monstersByHealth,
-    monstersByHealthReversed,
-    monstersByDistance,
-    monstersByDistanceReversed,
-]
+monsters: list[Monster] = []
+
+
+def gen_monsters_list(monsters: list[Monster]) -> list[list[Monster]]:
+
+    monstersByHealth = sorted(monsters, key=lambda x: x.health, reverse=True)
+    monstersByHealthReversed = sorted(monsters, key=lambda x: x.health, reverse=False)
+    return [
+        monstersByHealth,
+        monstersByHealthReversed,
+        _sort_distance(monsters),
+        _sort_distance(monsters, reverse=True),
+    ]
+
+
+def _sort_distance(monsters: list[Monster], reverse: bool = False) -> list[Monster]:
+    return sorted(monsters, key=lambda x: x.distanceTravelled, reverse=reverse)
+
+
 projectiles = []
 health = 100
 money = 5000000000
@@ -97,27 +97,6 @@ class TowerDefenseGame(Game):
 
         for m in monsters:
             m.update()
-        global monstersByHealth
-        global monstersByHealthReversed
-        global monstersByDistance
-        global monstersByDistanceReversed
-        global monstersListList
-        monstersByHealth = sorted(monsters, key=lambda x: x.health, reverse=True)
-        monstersByDistance = sorted(
-            monsters, key=lambda x: x.distanceTravelled, reverse=True
-        )
-        monstersByHealthReversed = sorted(
-            monsters, key=lambda x: x.health, reverse=False
-        )
-        monstersByDistanceReversed = sorted(
-            monsters, key=lambda x: x.distanceTravelled, reverse=False
-        )
-        monstersListList = [
-            monstersByHealth,
-            monstersByHealthReversed,
-            monstersByDistance,
-            monstersByDistanceReversed,
-        ]
 
         for tower in tower_map.values():
             tower.update()
@@ -128,8 +107,8 @@ class TowerDefenseGame(Game):
         for tower in tower_map.values():
             tower.paint(self.canvas)
 
-        for i in range(len(monstersByDistanceReversed)):
-            monstersByDistanceReversed[i].paint(self.canvas)
+        for monster in _sort_distance(monsters):
+            monster.paint(self.canvas)
         for i in range(len(projectiles)):
             projectiles[i].paint(self.canvas)
         if displayTower:
@@ -282,10 +261,9 @@ class Wavegenerator:
         pathList.append(5)
 
     def spawnMonster(self):
-        self.monsterType = globals()[
-            monsterDictionary[self.currentWave[self.currentMonster]]
-        ]
-        monsters.append(self.monsterType(0))
+        monster_idx = self.currentWave[self.currentMonster]
+
+        monsters.append(monster_factory(monster_idx))
         self.currentMonster = self.currentMonster + 1
 
     def update(self):
@@ -785,7 +763,7 @@ class TargetingTower(tower.ShootingTower):
         self.stickyTarget = False
 
     def prepareShot(self):
-        self.checkList = monstersListList[self.targetList]
+        self.checkList = gen_monsters_list(monsters)[self.targetList]
         if self.ticks != 20 / self.bulletsPerSecond:
             self.ticks += 1
         if self.stickyTarget == False:
@@ -1111,6 +1089,19 @@ class MonsterBig(Monster):
         self.speed = float(blockSize) / 6
         self.movement = float(blockSize) / 6
         self.axis = 3 * blockSize / 2
+
+
+def monster_factory(idx: int) -> Monster:
+    monsters = (
+        Monster1,
+        Monster2,
+        AlexMonster,
+        BenMonster,
+        LeoMonster,
+        MonsterBig,
+    )
+    monster = monsters[idx](0)
+    return monster
 
 
 class Block(object):
