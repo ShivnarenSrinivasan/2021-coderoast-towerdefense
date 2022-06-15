@@ -1135,13 +1135,3 @@ class WaterBlock(Block):
     def __init__(self, x, y, blockNumber, gridx, gridy):
         super(WaterBlock, self).__init__(x, y, blockNumber, gridx, gridy)
         self.canPlace = False
-
-
-def main():
-    game = TowerDefenseGame()
-    game.initialize()
-    game.run()
-
-
-if __name__ == "__main__":
-    main()
