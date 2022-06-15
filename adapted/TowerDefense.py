@@ -1101,26 +1101,28 @@ class Block(object):
         self.image = None
         self.axis = blockSize / 2
 
-    def hoveredOver(self, click, game):
-        if click == True:
-            global money
-            point = grid.Point(self.gridx, self.gridy)
-            if point in tower_map:
-                tower = tower_map[point]
-                if selectedTower == "<None>":
-                    tower.clicked = True
-                    global displayTower
-                    displayTower = tower
-                    game.infoboard.displaySpecific()
-            elif (
-                selectedTower != "<None>"
-                and self.canPlace == True
-                and money >= towerCost[selectedTower]
-            ):
-                tower_map[point] = tower_factory(
-                    selectedTower, self.x, self.y, self.gridx, self.gridy
-                )
-                money -= towerCost[selectedTower]
+    def hoveredOver(self, click: bool, game: TowerDefenseGame) -> None:
+        if not click:
+            return None
+
+        global money
+        point = grid.Point(self.gridx, self.gridy)
+        if point in tower_map:
+            tower = tower_map[point]
+            if selectedTower == "<None>":
+                tower.clicked = True
+                global displayTower
+                displayTower = tower
+                game.infoboard.displaySpecific()
+        elif (
+            selectedTower != "<None>"
+            and self.canPlace == True
+            and money >= towerCost[selectedTower]
+        ):
+            tower_map[point] = tower_factory(
+                selectedTower, self.x, self.y, self.gridx, self.gridy
+            )
+            money -= towerCost[selectedTower]
 
     def update(self):
         pass
