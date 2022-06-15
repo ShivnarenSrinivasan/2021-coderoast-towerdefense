@@ -1,17 +1,26 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Protocol
 
 
+class BaseButton(Protocol):
+    """Contains coords."""
+    x: int
+    y: int
+    xTwo: int
+    yTwo: int
+
+
+@dataclass  # type: ignore
 class Button(ABC):
     """Generic Button."""
+    x: int
+    y: int
+    xTwo: int
+    yTwo: int
 
-    def __init__(self, x, y, xTwo, yTwo):
-        self.x = x
-        self.y = y
-        self.xTwo = xTwo
-        self.yTwo = yTwo
-
-    def checkPress(self, x: int, y: int):
-        if x >= self.x and y >= self.y and x <= self.xTwo and y <= self.yTwo:
+    def checkPress(self, x: int, y: int) -> bool:
+        if is_within_bounds(self, x, y):
             self.pressed()
             return True
         return False
@@ -26,5 +35,5 @@ class Button(ABC):
         )
 
 
-def is_within_bounds(self, x: int, y: int) -> bool:
-    return self.x <= x <= self.xTwo and self.y <= y <= self.yTwo
+def is_within_bounds(btn: BaseButton, x: int, y: int) -> bool:
+    return btn.x <= x <= btn.xTwo and btn.y <= y <= btn.yTwo

@@ -299,15 +299,12 @@ class NextWaveButton:
         self.xTwo = 550
         self.yTwo = 50
 
-    def is_within_bounds(self, x: int, y: int) -> bool:
-        return self.x <= x <= self.xTwo and self.y <= y <= self.yTwo
-
     @property
     def can_spawn(self) -> bool:
         return self.game.is_idle and len(monsters) == 0
 
     def checkPress(self, click: bool, x: int, y: int):
-        if not self.is_within_bounds(x, y):
+        if not buttons.is_within_bounds(self, x, y):
             return
         if not click or not self.can_spawn:
             return
@@ -335,7 +332,6 @@ class TargetButton(buttons.Button):
 
 
 class StickyButton(buttons.Button):
-
     def pressed(self):
         global displayTower
         if displayTower.stickyTarget == False:
@@ -345,7 +341,6 @@ class StickyButton(buttons.Button):
 
 
 class SellButton(buttons.Button):
-
     def pressed(self):
         global displayTower
         if displayTower is None:
@@ -355,7 +350,6 @@ class SellButton(buttons.Button):
 
 
 class UpgradeButton(buttons.Button):
-
     def pressed(self):
         global money
         global displayTower
@@ -416,12 +410,22 @@ class Infoboard:
 
             self.currentButtons.append(TargetButton(92, 50, 101, 59, 2))
             self.canvas.create_text(
-                103, 48, text="> Distance", font=("times", 12), fill="white", anchor=tk.NW
+                103,
+                48,
+                text="> Distance",
+                font=("times", 12),
+                fill="white",
+                anchor=tk.NW,
             )
 
             self.currentButtons.append(TargetButton(92, 30, 101, 39, 3))
             self.canvas.create_text(
-                103, 28, text="< Distance", font=("times", 12), fill="white", anchor=tk.NW
+                103,
+                28,
+                text="< Distance",
+                font=("times", 12),
+                fill="white",
+                anchor=tk.NW,
             )
 
             self.currentButtons.append(StickyButton(10, 40, 19, 49))
@@ -438,7 +442,12 @@ class Infoboard:
                 )
 
             self.canvas.create_text(
-                28, 146, text="Sell", font=("times", 22), fill="light green", anchor=tk.NW
+                28,
+                146,
+                text="Sell",
+                font=("times", 22),
+                fill="light green",
+                anchor=tk.NW,
             )
 
             self.currentButtons[displayTower.targetList].paint(self.canvas)
@@ -608,8 +617,6 @@ class Mouse:
                     image=self.canNotPressImage,
                     anchor=tk.NW,
                 )
-
-
 
 
 class Projectile:
