@@ -6,8 +6,8 @@ from dataclasses import dataclass
 class Point:
     """(x, y) coord pair of grid."""
 
-    x: int
-    y: int
+    x: int | float
+    y: int | float
 
 
 def point_iter(grid_size: int) -> Generator[Point, None, None]:
