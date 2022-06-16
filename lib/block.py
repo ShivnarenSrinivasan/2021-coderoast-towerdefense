@@ -6,7 +6,7 @@ import grid
 class Block:
     loc: grid.Loc
     block_num: int
-    grid: grid.Point
+    grid_loc: grid.Point
     can_place: bool
 
 

@@ -583,9 +583,9 @@ class Mouse:
             return None
 
         block = blockGrid[self.gridx][self.gridy]
-        if block.grid in tower_map:
+        if block.grid_loc in tower_map:
             if not is_tower_selected():
-                select_tower(block.grid)
+                select_tower(block.grid_loc)
                 self.game.infoboard.displaySpecific()
         else:
             if is_tower_selected() and can_add_tower(block, selectedTower):
@@ -883,7 +883,7 @@ def can_buy_tower(money: int, _tower: str) -> bool:
 
 def add_tower(block: block.Block, _tower: str) -> None:
     global money
-    tower_map[block.grid] = tower_factory(_tower, block.loc, block.grid)
+    tower_map[block.grid_loc] = tower_factory(_tower, block.loc, block.grid_loc)
     money -= tower.cost(_tower)
 
 
