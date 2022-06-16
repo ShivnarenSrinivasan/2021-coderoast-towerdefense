@@ -590,27 +590,18 @@ class Mouse:
             and self.gridy <= gridSize - 1
         )
 
-    def paint(self, canvas: tk.Canvas):
-        if (
-            self.gridx >= 0
-            and self.gridx <= gridSize - 1
-            and self.gridy >= 0
-            and self.gridy <= gridSize - 1
-        ):
-            if blockGrid[self.gridx][self.gridy].canPlace:
-                canvas.create_image(
-                    self.gridx * blockSize,
-                    self.gridy * blockSize,
-                    image=self.image,
-                    anchor=tk.NW,
-                )
-            else:
-                canvas.create_image(
-                    self.gridx * blockSize,
-                    self.gridy * blockSize,
-                    image=self.canNotPressImage,
-                    anchor=tk.NW,
-                )
+    def paint(self, canvas: tk.Canvas) -> None:
+        if not self._in_grid():
+            return None
+
+        block = blockGrid[self.gridx][self.gridy]
+        img = self.image if block.canPlace else self.canNotPressImage
+        canvas.create_image(
+            self.gridx * blockSize,
+            self.gridy * blockSize,
+            image=img,
+            anchor=tk.NW,
+        )
 
 
 class Projectile:
