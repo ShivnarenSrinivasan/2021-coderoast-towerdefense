@@ -5,9 +5,9 @@ import grid
 @dataclass
 class Block:
     loc: grid.Loc
-    blockNumber: int
+    block_num: int
     grid: grid.Point
-    canPlace: bool
+    can_place: bool
 
 
 class NormalBlock(Block):
@@ -34,5 +34,5 @@ def block_factory(x: float, y: float, block_num: int, gridx: int, gridy: int) ->
         grid.Loc(x, y),
         block_num,
         grid.Point(gridx, gridy),
-        canPlace=BlockType is NormalBlock,
+        can_place=BlockType is NormalBlock,
     )

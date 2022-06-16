@@ -604,7 +604,7 @@ class Mouse:
             return None
 
         block = blockGrid[self.gridx][self.gridy]
-        img = self.image if block.canPlace else self.canNotPressImage
+        img = self.image if block.can_place else self.canNotPressImage
         canvas.create_image(
             self.gridx * blockSize,
             self.gridy * blockSize,
@@ -874,7 +874,7 @@ def is_tower_selected() -> bool:
 
 
 def can_add_tower(block: block.Block, _tower: str) -> bool:
-    return all([block.canPlace, can_buy_tower(money, _tower)])
+    return all([block.can_place, can_buy_tower(money, _tower)])
 
 
 def can_buy_tower(money: int, _tower: str) -> bool:
