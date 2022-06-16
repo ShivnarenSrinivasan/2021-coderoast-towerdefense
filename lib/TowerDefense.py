@@ -621,8 +621,6 @@ class Projectile:
         self.speed = blockSize / 2
         self.damage = damage
         self.speed = speed
-        # self.image = Image.open("images/projectileImages/"+self.__class__.__name__+ ".png")
-        # self.image = ImageTk.PhotoImage(self.image)
 
     def update(self):
         if self.target and not self.target.alive:
@@ -1093,9 +1091,7 @@ class Block:
             and self.canPlace == True
             and money >= tower.cost(selectedTower)
         ):
-            tower_map[self.grid] = tower_factory(
-                selectedTower, self.loc, self.grid
-            )
+            tower_map[self.grid] = tower_factory(selectedTower, self.loc, self.grid)
             money -= tower.cost(selectedTower)
 
     def update(self):
