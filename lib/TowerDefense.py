@@ -582,6 +582,14 @@ class Mouse:
                 self.pressed, self.x - self.xoffset, self.y - self.yoffset
             )
 
+    def _in_grid(self) -> bool:
+        return (
+            self.gridx >= 0
+            and self.gridx <= gridSize - 1
+            and self.gridy >= 0
+            and self.gridy <= gridSize - 1
+        )
+
     def paint(self, canvas: tk.Canvas):
         if (
             self.gridx >= 0
