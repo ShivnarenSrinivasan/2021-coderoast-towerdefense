@@ -51,7 +51,7 @@ def _sort_distance(monsters: list[Monster], reverse: bool = False) -> list[Monst
     return sorted(monsters, key=lambda x: x.distanceTravelled, reverse=reverse)
 
 
-projectiles = []
+projectiles: list[Projectile] = []
 health = 100
 money = 5000000000
 selectedTower = "<None>"
