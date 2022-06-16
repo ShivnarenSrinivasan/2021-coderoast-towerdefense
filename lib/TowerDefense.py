@@ -566,14 +566,12 @@ class Mouse:
         self.gridx = int((self.x - (self.x % blockSize)) / blockSize)
         self.gridy = int((self.y - (self.y % blockSize)) / blockSize)
 
-    def update(self):
-        if (
-            self.gridx >= 0
-            and self.gridx <= gridSize - 1
-            and self.gridy >= 0
-            and self.gridy <= gridSize - 1
-        ):
-            blockGrid[self.gridx][self.gridy].hoveredOver(self.pressed, self.game)
+    def update(self) -> None:
+        if self._in_grid():
+            if not self.pressed:
+                return None
+            block = blockGrid[self.gridx][self.gridy]
+            block.hoveredOver(self.game)
         else:
             self.game.displayboard.nextWaveButton.checkPress(
                 self.pressed, self.x - self.xoffset, self.y - self.yoffset
@@ -1084,10 +1082,7 @@ class Block:
         self.image = None
         self.axis = blockSize / 2
 
-    def hoveredOver(self, click: bool, game: TowerDefenseGame) -> None:
-        if not click:
-            return None
-
+    def hoveredOver(self, game: TowerDefenseGame) -> None:
         global money
         if self.grid in tower_map:
             _tower = tower_map[self.grid]
