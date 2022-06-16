@@ -590,7 +590,8 @@ class Mouse:
                 select_tower(block.grid)
                 self.game.infoboard.displaySpecific()
         else:
-            block.hoveredOver()
+            if is_tower_selected() and can_add_tower(block, selectedTower):
+                add_tower(block, selectedTower)
 
     def _out_update(self) -> None:
         self.game.displayboard.nextWaveButton.checkPress(
@@ -882,6 +883,12 @@ def can_buy_tower(money: int, _tower: str) -> bool:
     return money >= tower.cost(_tower)
 
 
+def add_tower(block: Block, _tower: str) -> None:
+    global money
+    tower_map[block.grid] = tower_factory(_tower, block.loc, block.grid)
+    money -= tower.cost(_tower)
+
+
 class Monster(object):
     def __init__(self, distance):
         self.alive = True
@@ -1093,16 +1100,6 @@ class Block:
         self.grid = grid.Point(gridx, gridy)
         self.image = None
         self.axis = blockSize / 2
-
-    def hoveredOver(self) -> None:
-        global money
-        if (
-            selectedTower != "<None>"
-            and self.canPlace == True
-            and money >= tower.cost(selectedTower)
-        ):
-            tower_map[self.grid] = tower_factory(selectedTower, self.loc, self.grid)
-            money -= tower.cost(selectedTower)
 
     def add_tower(self) -> None:
         self.canPlace = False
