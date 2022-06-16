@@ -289,8 +289,8 @@ class NextWaveButton:
     def can_spawn(self) -> bool:
         return self.game.is_idle and len(monsters) == 0
 
-    def checkPress(self, click: bool, x: int, y: int):
-        if not buttons.is_within_bounds(self, x, y):
+    def checkPress(self, click: bool, point: grid.Point):
+        if not buttons.is_within_bounds(self, point):
             return
         if not click or not self.can_spawn:
             return
@@ -351,12 +351,12 @@ class Infoboard:
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.currentButtons: list[buttons.Button] = []
 
-    def buttonsCheck(self, click: bool, x: int, y: int) -> None:
+    def buttonsCheck(self, click: bool, point: grid.Point) -> None:
         if not click:
             return None
 
         for btn in self.currentButtons:
-            if btn.checkPress(x, y):
+            if btn.checkPress(point):
                 self.displaySpecific()
                 return None
 
@@ -587,11 +587,12 @@ class Mouse:
                 add_tower(block, selectedTower)
 
     def _out_update(self) -> None:
+        pos = grid.Point(self.x - self.xoffset, self.y - self.yoffset)
         self.game.displayboard.nextWaveButton.checkPress(
-            self.pressed, self.x - self.xoffset, self.y - self.yoffset
+            self.pressed, pos
         )
         self.game.infoboard.buttonsCheck(
-            self.pressed, self.x - self.xoffset, self.y - self.yoffset
+            self.pressed, pos
         )
 
     def paint(self, canvas: tk.Canvas) -> None:

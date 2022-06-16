@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Protocol
 
+import grid
+
 
 class BaseButton(Protocol):
     """Contains coords."""
@@ -19,8 +21,8 @@ class Button(ABC):
     xTwo: int
     yTwo: int
 
-    def checkPress(self, x: int, y: int) -> bool:
-        if is_within_bounds(self, x, y):
+    def checkPress(self, point: grid.Point) -> bool:
+        if is_within_bounds(self, point):
             self.press()
             return True
         return False
@@ -35,5 +37,5 @@ class Button(ABC):
         )
 
 
-def is_within_bounds(btn: BaseButton, x: int, y: int) -> bool:
-    return btn.x <= x <= btn.xTwo and btn.y <= y <= btn.yTwo
+def is_within_bounds(btn: BaseButton, point: grid.Point) -> bool:
+    return btn.x <= point.x <= btn.xTwo and btn.y <= point.y <= btn.yTwo
