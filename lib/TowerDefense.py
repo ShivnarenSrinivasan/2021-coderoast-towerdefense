@@ -1085,11 +1085,8 @@ class Block:
     def hoveredOver(self, game: TowerDefenseGame) -> None:
         global money
         if self.grid in tower_map:
-            _tower = tower_map[self.grid]
             if selectedTower == "<None>":
-                _tower.clicked = True
-                global displayTower
-                displayTower = _tower
+                select_tower(self.grid)
                 game.infoboard.displaySpecific()
         elif (
             selectedTower != "<None>"
