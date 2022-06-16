@@ -356,7 +356,8 @@ class Infoboard:
             return None
 
         for btn in self.currentButtons:
-            if btn.checkPress(point):
+            if btn.can_press(point):
+                btn.press()
                 self.displaySpecific()
                 return None
 

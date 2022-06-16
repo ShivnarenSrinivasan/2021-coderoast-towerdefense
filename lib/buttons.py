@@ -21,11 +21,8 @@ class Button(ABC):
     xTwo: int
     yTwo: int
 
-    def checkPress(self, point: grid.Point) -> bool:
-        if is_within_bounds(self, point):
-            self.press()
-            return True
-        return False
+    def can_press(self, point: grid.Point) -> bool:
+        return is_within_bounds(self, point)
 
     @abstractmethod
     def press(self) -> None:
