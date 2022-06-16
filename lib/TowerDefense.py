@@ -572,7 +572,9 @@ class Mouse:
                 return None
             block = blockGrid[self.gridx][self.gridy]
             if block.grid in tower_map:
-                block.tower_select(self.game)
+                if not is_tower_selected():
+                    select_tower(block.grid)
+                    self.game.infoboard.displaySpecific()
             else:
                 block.hoveredOver()
         else:
@@ -1094,11 +1096,6 @@ class Block:
         ):
             tower_map[self.grid] = tower_factory(selectedTower, self.loc, self.grid)
             money -= tower.cost(selectedTower)
-
-    def tower_select(self, game: TowerDefenseGame) -> None:
-        if selectedTower == "<None>":
-            select_tower(self.grid)
-            game.infoboard.displaySpecific()
 
     def add_tower(self) -> None:
         self.canPlace = False
