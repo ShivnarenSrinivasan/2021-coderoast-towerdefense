@@ -518,15 +518,11 @@ class Mouse:
         self.xoffset = 0
         self.yoffset = 0
         self.pressed = False
-        game.root.bind(
-            "<Button-1>", self.clicked
-        )  # whenever left mouse button is pressed, go to def released(event)
-        game.root.bind(
-            "<ButtonRelease-1>", self.released
-        )  # whenever left mouse button is released, go to def released(event)
-        game.root.bind(
-            "<Motion>", self.motion
-        )  # whenever left mouse button is dragged, go to def released(event)
+
+        game.root.bind("<Button-1>", self.clicked)
+        game.root.bind("<ButtonRelease-1>", self.released)
+        game.root.bind("<Motion>", self.motion)
+
         self.image = Image.open("images/mouseImages/HoveringCanPress.png")
         self.image = ImageTk.PhotoImage(self.image)
         self.canNotPressImage = Image.open("images/mouseImages/HoveringCanNotPress.png")
