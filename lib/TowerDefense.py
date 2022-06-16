@@ -967,7 +967,7 @@ class Monster(object):
         self.alive = False
         monsters.remove(self)
 
-    def paint(self, canvas):
+    def paint(self, canvas: tk.Canvas):
         canvas.create_rectangle(
             self.x - self.axis,
             self.y - 3 * self.axis / 2,
@@ -1107,7 +1107,7 @@ class Block:
     def update(self):
         pass
 
-    def paint(self, draw):
+    def paint(self, draw: Image.Image):
         self.image = Image.open(
             "images/blockImages/" + self.__class__.__name__ + ".png"
         )
