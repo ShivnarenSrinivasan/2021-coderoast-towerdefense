@@ -299,7 +299,7 @@ class NextWaveButton:
         else:
             self.color = "red"
         canvas.create_rectangle(
-            *self.coord1, *self.coord1, fill=self.color, outline=self.color
+            *self.coord1, *self.coord2, fill=self.color, outline=self.color
         )  # draws a rectangle where the pointer is
         canvas.create_text(500, 37, text="Next Wave")
 
