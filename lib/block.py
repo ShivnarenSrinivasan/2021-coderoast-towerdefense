@@ -22,7 +22,7 @@ class WaterBlock(Block):
     ...
 
 
-def block_factory(x: float, y: float, block_num: int, gridx: int, gridy: int) -> Block:
+def factory(x: float, y: float, block_num: int, gridx: int, gridy: int) -> Block:
     blocks = (
         NormalBlock,
         PathBlock,

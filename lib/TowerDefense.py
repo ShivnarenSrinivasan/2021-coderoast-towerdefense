@@ -139,7 +139,7 @@ def make_grid(map_name: str):
 
     def make_block(x: int, y: int) -> block.Block:
         block_num = grid_vals[gridSize * y + x]
-        return block.block_factory(
+        return block.factory(
             x * blockSize + blockSize / 2,
             y * blockSize + blockSize / 2,
             block_num,
