@@ -568,22 +568,9 @@ class Mouse:
 
     def update(self) -> None:
         if self._in_grid():
-            if not self.pressed:
-                return None
-            block = blockGrid[self.gridx][self.gridy]
-            if block.grid in tower_map:
-                if not is_tower_selected():
-                    select_tower(block.grid)
-                    self.game.infoboard.displaySpecific()
-            else:
-                block.hoveredOver()
+            self._in_update()
         else:
-            self.game.displayboard.nextWaveButton.checkPress(
-                self.pressed, self.x - self.xoffset, self.y - self.yoffset
-            )
-            self.game.infoboard.buttonsCheck(
-                self.pressed, self.x - self.xoffset, self.y - self.yoffset
-            )
+            self._out_update()
 
     def _in_grid(self) -> bool:
         return (
@@ -591,6 +578,26 @@ class Mouse:
             and self.gridx <= gridSize - 1
             and self.gridy >= 0
             and self.gridy <= gridSize - 1
+        )
+
+    def _in_update(self) -> None:
+        if not self.pressed:
+            return None
+
+        block = blockGrid[self.gridx][self.gridy]
+        if block.grid in tower_map:
+            if not is_tower_selected():
+                select_tower(block.grid)
+                self.game.infoboard.displaySpecific()
+        else:
+            block.hoveredOver()
+
+    def _out_update(self) -> None:
+        self.game.displayboard.nextWaveButton.checkPress(
+            self.pressed, self.x - self.xoffset, self.y - self.yoffset
+        )
+        self.game.infoboard.buttonsCheck(
+            self.pressed, self.x - self.xoffset, self.y - self.yoffset
         )
 
     def paint(self, canvas: tk.Canvas) -> None:
