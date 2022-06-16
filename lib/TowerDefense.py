@@ -4,9 +4,7 @@ import random
 from enum import Enum, auto
 
 import tkinter as tk
-from tkinter import *
-
-from PIL import Image, ImageDraw, ImageTk
+from PIL import Image, ImageTk
 
 import buttons
 import display
