@@ -1,6 +1,7 @@
 from __future__ import annotations
 import math
 import random
+from collections.abc import Sequence
 from enum import Enum, auto
 
 import tkinter as tk
@@ -75,7 +76,9 @@ class TowerDefenseGame(Game):
         self.infoboard = Infoboard(self)
 
         self.towerbox = Towerbox(self)
-        self.add_object(Map())
+        _map = Map(mapSize)
+        _map.load()
+        self.add_object(_map)
         self.add_object(Mouse(self))
         self.add_object(Wavegenerator(self))
 
@@ -120,47 +123,56 @@ class TowerDefenseGame(Game):
 
 
 class Map:
-    def __init__(self):
-        self.image = None
-        self.loadMap("LeoMap")
+    def __init__(self, map_size: int):
+        self.image: ImageTk.PhotoImage
+        self.map_size = map_size
 
-    def loadMap(self, mapName):
-        self.drawnMap = Image.new("RGBA", (mapSize, mapSize), (255, 255, 255, 255))
-        self.mapFile = open("texts/mapTexts/" + mapName + ".txt", "r")
-        self.gridValues = list(map(int, (self.mapFile.read()).split()))
+    def load(self, map_name: str = 'LeoMap'):
+        map_canvas = Image.new(
+            "RGBA", (self.map_size, self.map_size), (255, 255, 255, 255)
+        )
+        grid_vals = self._load_template(map_name)
+        # TODO: Separate the `reset` from `drawing`
+        _reset_grid(grid_vals, map_canvas)
 
-        self._reset_grid()
+        map_canvas.save(f'images/mapImages/{map_name}.png')
+        self.image = self._load_image(map_name)
 
-        self.drawnMap.save("images/mapImages/" + mapName + ".png")
-        self.image = Image.open("images/mapImages/" + mapName + ".png")
-        self.image = ImageTk.PhotoImage(self.image)
+    def _load_template(self, map_name: str) -> Sequence[int]:
+        with open("texts/mapTexts/" + map_name + ".txt") as map_file:
+            grid_vals = list(map(int, (map_file.read()).split()))
+        return grid_vals
 
-    def _reset_grid(self):
-        blockGrid.clear()
-
-        def make_row(x: int) -> list[Block]:
-            return [make_block(x, y) for y in range(gridSize)]
-
-        def make_block(x: int, y: int) -> Block:
-            block_num = self.gridValues[gridSize * y + x]
-            block = block_factory(
-                x * blockSize + blockSize / 2,
-                y * blockSize + blockSize / 2,
-                block_num,
-                x,
-                y,
-            )
-            block.paint(self.drawnMap)
-            return block
-
-        for x in range(gridSize):
-            blockGrid.append(make_row(x))
+    def _load_image(self, map_name: str) -> ImageTk.PhotoImage:
+        return ImageTk.PhotoImage(Image.open(f'images/mapImages/{map_name}.png'))
 
     def update(self):
         pass
 
     def paint(self, canvas: tk.Canvas) -> None:
         canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
+
+
+def _reset_grid(grid_vals: Sequence[int], map_canvas: Image.Image):
+    blockGrid.clear()
+
+    def make_row(x: int) -> list[Block]:
+        return [make_block(x, y) for y in range(gridSize)]
+
+    def make_block(x: int, y: int) -> Block:
+        block_num = grid_vals[gridSize * y + x]
+        block = block_factory(
+            x * blockSize + blockSize / 2,
+            y * blockSize + blockSize / 2,
+            block_num,
+            x,
+            y,
+        )
+        block.paint(map_canvas)
+        return block
+
+    for x in range(gridSize):
+        blockGrid.append(make_row(x))
 
 
 class Wavegenerator:
