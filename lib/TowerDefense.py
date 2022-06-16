@@ -205,7 +205,6 @@ class Wavegenerator:
                 return
 
     def move(self):
-        global pathList
         pathList.append(self.direction)
         if self.direction == 1:
             self.gridx += 1
@@ -262,7 +261,6 @@ class Wavegenerator:
                 self.move()
                 return
 
-        global pathList
         pathList.append(5)
 
     def spawnMonster(self):
@@ -323,13 +321,11 @@ class TargetButton(buttons.Button):
         self.type = myType
 
     def pressed(self):
-        global displayTower
         displayTower.targetList = self.type
 
 
 class StickyButton(buttons.Button):
     def pressed(self):
-        global displayTower
         if displayTower.stickyTarget == False:
             displayTower.stickyTarget = True
         else:
@@ -348,7 +344,6 @@ class SellButton(buttons.Button):
 class UpgradeButton(buttons.Button):
     def pressed(self):
         global money
-        global displayTower
         if money >= displayTower.upgradeCost:
             money -= displayTower.upgradeCost
             displayTower.upgrade()
