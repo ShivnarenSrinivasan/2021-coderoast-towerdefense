@@ -571,7 +571,10 @@ class Mouse:
             if not self.pressed:
                 return None
             block = blockGrid[self.gridx][self.gridy]
-            block.hoveredOver(self.game)
+            if block.grid in tower_map:
+                block.tower_select(self.game)
+            else:
+                block.hoveredOver()
         else:
             self.game.displayboard.nextWaveButton.checkPress(
                 self.pressed, self.x - self.xoffset, self.y - self.yoffset
@@ -1082,19 +1085,20 @@ class Block:
         self.image = None
         self.axis = blockSize / 2
 
-    def hoveredOver(self, game: TowerDefenseGame) -> None:
+    def hoveredOver(self) -> None:
         global money
-        if self.grid in tower_map:
-            if selectedTower == "<None>":
-                select_tower(self.grid)
-                game.infoboard.displaySpecific()
-        elif (
+        if (
             selectedTower != "<None>"
             and self.canPlace == True
             and money >= tower.cost(selectedTower)
         ):
             tower_map[self.grid] = tower_factory(selectedTower, self.loc, self.grid)
             money -= tower.cost(selectedTower)
+
+    def tower_select(self, game: TowerDefenseGame) -> None:
+        if selectedTower == "<None>":
+            select_tower(self.grid)
+            game.infoboard.displaySpecific()
 
     def add_tower(self) -> None:
         self.canPlace = False
