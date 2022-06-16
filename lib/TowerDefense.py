@@ -130,11 +130,11 @@ def create_map(map_name: str, map_size: int) -> None:
     map_canvas = Image.new("RGBA", (map_size, map_size), (255, 255, 255, 255))
     make_grid(map_name)
     paint_map_canvas(blockGrid, map_canvas)
-    map_canvas.save(f'images/mapImages/{map_name}.png')
+    map_canvas.save(maps.img_path(map_name))
 
 
 def make_grid(map_name: str):
-    grid_vals = _load_template(map_name)
+    grid_vals = maps.load_template(map_name)
     blockGrid.clear()
 
     def make_row(x: int) -> list[Block]:
@@ -153,12 +153,6 @@ def make_grid(map_name: str):
 
     for x in range(gridSize):
         blockGrid.append(make_row(x))
-
-
-def _load_template(map_name: str) -> Sequence[int]:
-    with open("texts/mapTexts/" + map_name + ".txt") as map_file:
-        grid_vals = list(map(int, (map_file.read()).split()))
-    return grid_vals
 
 
 def paint_map_canvas(block_grid: list[list[Block]], map_canvas: Image.Image) -> None:
