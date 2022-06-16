@@ -2,7 +2,6 @@ from __future__ import annotations
 import math
 import random
 from enum import Enum, auto
-
 import tkinter as tk
 from PIL import Image, ImageTk
 
@@ -280,10 +279,8 @@ class Wavegenerator:
 class NextWaveButton:
     def __init__(self, game: TowerDefenseGame):
         self.game = game
-        self.x = 450
-        self.y = 25
-        self.xTwo = 550
-        self.yTwo = 50
+        self.coord1 = grid.Point(450, 25)
+        self.coord2 = grid.Point(550, 50)
 
     @property
     def can_spawn(self) -> bool:
@@ -302,14 +299,14 @@ class NextWaveButton:
         else:
             self.color = "red"
         canvas.create_rectangle(
-            self.x, self.y, self.xTwo, self.yTwo, fill=self.color, outline=self.color
+            *self.coord1, *self.coord1, fill=self.color, outline=self.color
         )  # draws a rectangle where the pointer is
         canvas.create_text(500, 37, text="Next Wave")
 
 
 class TargetButton(buttons.Button):
-    def __init__(self, x, y, xTwo, yTwo, myType):
-        super(TargetButton, self).__init__(x, y, xTwo, yTwo)
+    def __init__(self, coord1: grid.Point, coord2: grid.Point, myType):
+        super().__init__(coord1, coord2)
         self.type = myType
 
     def press(self):
@@ -381,18 +378,19 @@ class Infoboard:
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
         if issubclass(displayTower.__class__, TargetingTower):
+            p1 = buttons.make_coords(26, 30, 35, 39)
 
-            self.currentButtons.append(TargetButton(26, 30, 35, 39, 0))
+            self.currentButtons.append(TargetButton(*p1, 0))
             self.canvas.create_text(
                 37, 28, text="> Health", font=("times", 12), fill="white", anchor=tk.NW
             )
 
-            self.currentButtons.append(TargetButton(26, 50, 35, 59, 1))
+            self.currentButtons.append(TargetButton(*p1, 1))
             self.canvas.create_text(
                 37, 48, text="< Health", font=("times", 12), fill="white", anchor=tk.NW
             )
 
-            self.currentButtons.append(TargetButton(92, 50, 101, 59, 2))
+            self.currentButtons.append(TargetButton(*buttons.make_coords(92, 50, 101, 59), 2))
             self.canvas.create_text(
                 103,
                 48,
@@ -402,7 +400,7 @@ class Infoboard:
                 anchor=tk.NW,
             )
 
-            self.currentButtons.append(TargetButton(92, 30, 101, 39, 3))
+            self.currentButtons.append(TargetButton(*buttons.make_coords(92, 30, 101, 39), 3))
             self.canvas.create_text(
                 103,
                 28,
@@ -412,10 +410,10 @@ class Infoboard:
                 anchor=tk.NW,
             )
 
-            self.currentButtons.append(StickyButton(10, 40, 19, 49))
-            self.currentButtons.append(SellButton(5, 145, 78, 168))
+            self.currentButtons.append(StickyButton(*buttons.make_coords(10, 40, 19, 49)))
+            self.currentButtons.append(SellButton(*buttons.make_coords(5, 145, 78, 168)))
             if displayTower.upgradeCost:
-                self.currentButtons.append(UpgradeButton(82, 145, 155, 168))
+                self.currentButtons.append(UpgradeButton(*buttons.make_coords(82, 145, 155, 168)))
                 self.canvas.create_text(
                     120,
                     157,
