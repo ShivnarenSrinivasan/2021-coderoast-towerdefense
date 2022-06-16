@@ -1099,15 +1099,14 @@ class Block:
         self.blockNumber = blockNumber
         self.grid = grid.Point(gridx, gridy)
         self.image = None
-        self.axis = blockSize / 2
 
     def update(self):
         pass
 
 
-def paint(_block: Block, img_canvas: Image.Image) -> None:
+def paint(_block: Block, img_canvas: Image.Image, axis: float = blockSize / 2) -> None:
     image = Image.open("images/blockImages/" + _block.__class__.__name__ + ".png")
-    offset = (int(_block.loc.x - _block.axis), int(_block.loc.y - _block.axis))
+    offset = (int(_block.loc.x - axis), int(_block.loc.y - axis))
     img_canvas.paste(image, offset)
 
 
