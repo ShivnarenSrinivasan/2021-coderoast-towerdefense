@@ -1,18 +1,15 @@
 from collections.abc import Generator, Sequence
-from dataclasses import dataclass
-from typing import TypeVar
+from typing import NamedTuple, TypeVar
 
 
-@dataclass(frozen=True)
-class Loc:
+class Loc(NamedTuple):
     """(x, y) coord pos of grid."""
 
     x: float
     y: float
 
 
-@dataclass(frozen=True)
-class Point:
+class Point(NamedTuple):
     """(x, y) indices of grid."""
 
     x: int
