@@ -1,7 +1,6 @@
 from __future__ import annotations
 import math
 import random
-from collections.abc import Sequence
 from enum import Enum, auto
 
 import tkinter as tk
