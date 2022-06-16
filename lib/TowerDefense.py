@@ -294,12 +294,9 @@ class NextWaveButton:
         self.game.set_state(TowerDefenseGameState.WAIT_FOR_SPAWN)
 
     def paint(self, canvas: tk.Canvas) -> None:
-        if self.game.is_idle and len(monsters) == 0:
-            self.color = "blue"
-        else:
-            self.color = "red"
+        color = 'blue' if self.game.is_idle and len(monsters) == 0 else 'red'
         canvas.create_rectangle(
-            *self.coord1, *self.coord2, fill=self.color, outline=self.color
+            *self.coord1, *self.coord2, fill=color, outline=color
         )  # draws a rectangle where the pointer is
         canvas.create_text(500, 37, text="Next Wave")
 
