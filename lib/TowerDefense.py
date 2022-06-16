@@ -157,7 +157,7 @@ def make_grid(map_name: str):
 
 def paint_map_canvas(block_grid: list[list[Block]], map_canvas: Image.Image) -> None:
     for block in grid.grid_iter(block_grid):
-        block.paint(map_canvas)
+        paint(block, map_canvas)
 
 
 class Wavegenerator:
@@ -1104,13 +1104,11 @@ class Block:
     def update(self):
         pass
 
-    def paint(self, draw: Image.Image):
-        self.image = Image.open(
-            "images/blockImages/" + self.__class__.__name__ + ".png"
-        )
-        self.offset = (int(self.loc.x - self.axis), int(self.loc.y - self.axis))
-        draw.paste(self.image, self.offset)
-        self.image = None
+
+def paint(_block: Block, img_canvas: Image.Image) -> None:
+    image = Image.open("images/blockImages/" + _block.__class__.__name__ + ".png")
+    offset = (int(_block.loc.x - _block.axis), int(_block.loc.y - _block.axis))
+    img_canvas.paste(image, offset)
 
 
 class NormalBlock(Block):
