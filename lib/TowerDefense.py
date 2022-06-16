@@ -845,9 +845,7 @@ class TackTower(TargetingTower):
         ...
 
 
-def tower_factory(
-    tower: str, loc: grid.Loc, grid: grid.Point
-) -> tower.Tower:
+def tower_factory(tower: str, loc: grid.Loc, grid: grid.Point) -> tower.Tower:
     towers = {
         "Arrow Shooter": ArrowShooterTower,
         "Bullet Shooter": BulletShooterTower,
