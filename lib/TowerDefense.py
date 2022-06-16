@@ -1085,6 +1085,9 @@ class Block:
             tower_map[self.grid] = tower_factory(selectedTower, self.loc, self.grid)
             money -= tower.cost(selectedTower)
 
+    def add_tower(self) -> None:
+        self.canPlace = False
+
     def update(self):
         pass
 
