@@ -4,11 +4,19 @@ from typing import TypeVar
 
 
 @dataclass(frozen=True)
-class Point:
-    """(x, y) coord pair of grid."""
+class Loc:
+    """(x, y) coord pos of grid."""
 
-    x: int | float
-    y: int | float
+    x: float
+    y: float
+
+
+@dataclass(frozen=True)
+class Point:
+    """(x, y) indices of grid."""
+
+    x: int
+    y: int
 
 
 def point_iter(grid_size: int) -> Generator[Point, None, None]:
