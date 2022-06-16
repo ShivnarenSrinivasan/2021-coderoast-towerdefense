@@ -390,7 +390,9 @@ class Infoboard:
                 37, 48, text="< Health", font=("times", 12), fill="white", anchor=tk.NW
             )
 
-            self.currentButtons.append(TargetButton(*buttons.make_coords(92, 50, 101, 59), 2))
+            self.currentButtons.append(
+                TargetButton(*buttons.make_coords(92, 50, 101, 59), 2)
+            )
             self.canvas.create_text(
                 103,
                 48,
@@ -400,7 +402,9 @@ class Infoboard:
                 anchor=tk.NW,
             )
 
-            self.currentButtons.append(TargetButton(*buttons.make_coords(92, 30, 101, 39), 3))
+            self.currentButtons.append(
+                TargetButton(*buttons.make_coords(92, 30, 101, 39), 3)
+            )
             self.canvas.create_text(
                 103,
                 28,
@@ -410,10 +414,16 @@ class Infoboard:
                 anchor=tk.NW,
             )
 
-            self.currentButtons.append(StickyButton(*buttons.make_coords(10, 40, 19, 49)))
-            self.currentButtons.append(SellButton(*buttons.make_coords(5, 145, 78, 168)))
+            self.currentButtons.append(
+                StickyButton(*buttons.make_coords(10, 40, 19, 49))
+            )
+            self.currentButtons.append(
+                SellButton(*buttons.make_coords(5, 145, 78, 168))
+            )
             if displayTower.upgradeCost:
-                self.currentButtons.append(UpgradeButton(*buttons.make_coords(82, 145, 155, 168)))
+                self.currentButtons.append(
+                    UpgradeButton(*buttons.make_coords(82, 145, 155, 168))
+                )
                 self.canvas.create_text(
                     120,
                     157,
@@ -587,12 +597,8 @@ class Mouse:
 
     def _out_update(self) -> None:
         pos = grid.Point(self.x - self.xoffset, self.y - self.yoffset)
-        self.game.displayboard.nextWaveButton.checkPress(
-            self.pressed, pos
-        )
-        self.game.infoboard.buttonsCheck(
-            self.pressed, pos
-        )
+        self.game.displayboard.nextWaveButton.checkPress(self.pressed, pos)
+        self.game.infoboard.buttonsCheck(self.pressed, pos)
 
     def paint(self, canvas: tk.Canvas) -> None:
         if not self._in_grid():

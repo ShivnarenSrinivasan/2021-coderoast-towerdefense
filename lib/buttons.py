@@ -7,6 +7,7 @@ import grid
 
 class BaseButton(Protocol):
     """Contains coords."""
+
     coord1: grid.Point
     coord2: grid.Point
 
@@ -14,6 +15,7 @@ class BaseButton(Protocol):
 @dataclass  # type: ignore
 class Button(ABC):
     """Generic Button."""
+
     coord1: grid.Point
     coord2: grid.Point
 
@@ -25,13 +27,14 @@ class Button(ABC):
         """Implement press functionality."""
 
     def paint(self, canvas):
-        canvas.create_rectangle(
-            *self.coord1, *self.coord2, fill="red", outline="black"
-        )
+        canvas.create_rectangle(*self.coord1, *self.coord2, fill="red", outline="black")
 
 
 def is_within_bounds(btn: BaseButton, point: grid.Point) -> bool:
-    return btn.coord1.x <= point.x <= btn.coord2.x and btn.coord1.y <= point.y <= btn.coord2.y
+    return (
+        btn.coord1.x <= point.x <= btn.coord2.x
+        and btn.coord1.y <= point.y <= btn.coord2.y
+    )
 
 
 def make_coords(x1: int, y1: int, x2: int, y2: int) -> tuple[grid.Point, grid.Point]:
