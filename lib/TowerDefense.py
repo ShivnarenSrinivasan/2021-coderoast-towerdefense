@@ -1101,9 +1101,6 @@ class Block:
         self.image = None
         self.axis = blockSize / 2
 
-    def add_tower(self) -> None:
-        self.canPlace = False
-
     def update(self):
         pass
 
