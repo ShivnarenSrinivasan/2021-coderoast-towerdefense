@@ -77,12 +77,12 @@ class TowerDefenseGame(Game):
         self.infoboard = Infoboard(self)
 
         self.towerbox = Towerbox(self)
-        self._load_map(maps.Map(mapSize))
+        self._load_map()
         self.add_object(Mouse(self))
         self.add_object(Wavegenerator(self))
 
-    def _load_map(self, _map: maps.Map, map_name: str = 'LeoMap') -> None:
-        _map.load(map_name)
+    def _load_map(self, map_name: str = 'LeoMap') -> None:
+        _map = maps.Map(map_name)
         make_grid(map_name)
         self.add_object(_map)
 
