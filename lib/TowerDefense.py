@@ -96,10 +96,6 @@ class TowerDefenseGame(Game):
         for p in projectiles:
             p.update()
 
-        for block in grid.grid_iter(blockGrid):
-            if block is not None:
-                block.update()
-
         for m in monsters:
             m.update()
 
@@ -1099,9 +1095,6 @@ class Block:
         self.blockNumber = blockNumber
         self.grid = grid.Point(gridx, gridy)
         self.image = None
-
-    def update(self):
-        pass
 
 
 def paint(_block: Block, img_canvas: Image.Image, axis: float = blockSize / 2) -> None:
