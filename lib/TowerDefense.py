@@ -727,9 +727,9 @@ class TargetingTower(tower.ShootingTower):
 
         if not self.stickyTarget:
             for monster in monster_list:
-                if (self.range + blockSize / 2) ** 2 >= (
-                    self.x - monster.x
-                ) ** 2 + (self.y - monster.y) ** 2:
+                if (self.range + blockSize / 2) ** 2 >= (self.x - monster.x) ** 2 + (
+                    self.y - monster.y
+                ) ** 2:
                     self.target = monster
 
         if self.target:
@@ -746,9 +746,9 @@ class TargetingTower(tower.ShootingTower):
                 self.target = None
         elif self.stickyTarget:
             for monster in monster_list:
-                if (self.range + blockSize / 2) ** 2 >= (
-                    self.x - monster.x
-                ) ** 2 + (self.y - monster.y) ** 2:
+                if (self.range + blockSize / 2) ** 2 >= (self.x - monster.x) ** 2 + (
+                    self.y - monster.y
+                ) ** 2:
                     self.target = monster
 
 
