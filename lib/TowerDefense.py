@@ -846,7 +846,7 @@ class TackTower(TargetingTower):
 
 
 def tower_factory(
-    tower: str, x: float, y: float, gridx: int, gridy: int
+    tower: str, loc: grid.Loc, grid: grid.Point
 ) -> tower.Tower:
     towers = {
         "Arrow Shooter": ArrowShooterTower,
@@ -855,7 +855,7 @@ def tower_factory(
         "Power Tower": PowerTower,
     }
     _tower = towers[tower]
-    return _tower(x, y, gridx, gridy)
+    return _tower(loc.x, loc.y, grid.x, grid.y)
 
 
 class Monster(object):
@@ -1061,16 +1061,12 @@ def monster_factory(idx: int) -> Monster:
     return monster
 
 
-class Block(object):
-    def __init__(
-        self, x, y, blockNumber, gridx, gridy
-    ):  # when i define a "Block", this is what happens
-        self.x = x  # sets Block x to the given 'x'
-        self.y = y  # sets Block y to the given 'y'
+class Block:
+    def __init__(self, x: float, y: float, blockNumber: int, gridx: int, gridy: int):
+        self.loc = grid.Loc(x, y)
         self.canPlace = True
         self.blockNumber = blockNumber
-        self.gridx = gridx
-        self.gridy = gridy
+        self.grid = grid.Point(gridx, gridy)
         self.image = None
         self.axis = blockSize / 2
 
@@ -1079,9 +1075,8 @@ class Block(object):
             return None
 
         global money
-        point = grid.Point(self.gridx, self.gridy)
-        if point in tower_map:
-            _tower = tower_map[point]
+        if self.grid in tower_map:
+            _tower = tower_map[self.grid]
             if selectedTower == "<None>":
                 _tower.clicked = True
                 global displayTower
@@ -1092,8 +1087,8 @@ class Block(object):
             and self.canPlace == True
             and money >= tower.cost(selectedTower)
         ):
-            tower_map[point] = tower_factory(
-                selectedTower, self.x, self.y, self.gridx, self.gridy
+            tower_map[self.grid] = tower_factory(
+                selectedTower, self.loc, self.grid
             )
             money -= tower.cost(selectedTower)
 
@@ -1104,7 +1099,7 @@ class Block(object):
         self.image = Image.open(
             "images/blockImages/" + self.__class__.__name__ + ".png"
         )
-        self.offset = (int(self.x - self.axis), int(self.y - self.axis))
+        self.offset = (int(self.loc.x - self.axis), int(self.loc.y - self.axis))
         draw.paste(self.image, self.offset)
         self.image = None
 
