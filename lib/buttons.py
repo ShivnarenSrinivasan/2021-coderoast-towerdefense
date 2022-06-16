@@ -21,12 +21,12 @@ class Button(ABC):
 
     def checkPress(self, x: int, y: int) -> bool:
         if is_within_bounds(self, x, y):
-            self.pressed()
+            self.press()
             return True
         return False
 
     @abstractmethod
-    def pressed(self) -> None:
+    def press(self) -> None:
         """Implement press functionality."""
 
     def paint(self, canvas):

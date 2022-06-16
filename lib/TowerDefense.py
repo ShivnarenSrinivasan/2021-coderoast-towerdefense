@@ -312,12 +312,12 @@ class TargetButton(buttons.Button):
         super(TargetButton, self).__init__(x, y, xTwo, yTwo)
         self.type = myType
 
-    def pressed(self):
+    def press(self):
         displayTower.targetList = self.type
 
 
 class StickyButton(buttons.Button):
-    def pressed(self):
+    def press(self):
         if displayTower.stickyTarget == False:
             displayTower.stickyTarget = True
         else:
@@ -325,7 +325,7 @@ class StickyButton(buttons.Button):
 
 
 class SellButton(buttons.Button):
-    def pressed(self):
+    def press(self):
         global displayTower
         if displayTower is None:
             raise TypeError('Display Tower should be of type <Tower>')
@@ -334,7 +334,7 @@ class SellButton(buttons.Button):
 
 
 class UpgradeButton(buttons.Button):
-    def pressed(self):
+    def press(self):
         global money
         if money >= displayTower.upgradeCost:
             money -= displayTower.upgradeCost
