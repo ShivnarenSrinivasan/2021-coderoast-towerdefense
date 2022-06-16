@@ -853,6 +853,25 @@ def tower_factory(tower: str, loc: grid.Loc, grid: grid.Point) -> tower.Tower:
     return _tower(loc.x, loc.y, grid.x, grid.y)
 
 
+def select_tower(_grid: grid.Point) -> None:
+    _tower = tower_map[_grid]
+    _tower.clicked = True
+    global displayTower
+    displayTower = _tower
+
+
+def is_tower_selected() -> bool:
+    return selectedTower != '<None>'
+
+
+def can_add_tower(block: Block, _tower: str) -> bool:
+    return all([block.canPlace, can_buy_tower(money, _tower)])
+
+
+def can_buy_tower(money: int, _tower: str) -> bool:
+    return money >= tower.cost(_tower)
+
+
 class Monster(object):
     def __init__(self, distance):
         self.alive = True
