@@ -5,13 +5,15 @@ from enum import Enum, auto
 import tkinter as tk
 from PIL import Image, ImageTk
 
-import buttons
-import block
-import display
-import grid
-import maps
-import tower
-from game import Game
+from . import (
+    buttons,
+    block,
+    display,
+    grid,
+    maps,
+    tower,
+)
+from .game import Game
 
 gridSize = 30  # the height and width of the array of blocks
 blockSize = 20  # pixels wide of each block

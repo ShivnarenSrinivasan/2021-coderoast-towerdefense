@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-import grid
+from . import grid
 
 
 @dataclass

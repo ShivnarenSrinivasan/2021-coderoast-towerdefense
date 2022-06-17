@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Protocol
 
-import grid
+from . import grid
 
 
 class BaseButton(Protocol):

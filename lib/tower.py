@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from PIL import Image, ImageTk
 
-import grid
+from . import grid
 
 
 class Tower(ABC):
