@@ -17,10 +17,7 @@ class Tower(ABC):
         self.y = y
         self.gridx = gridx
         self.gridy = gridy
-        self.image = Image.open(
-            "images/towerImages/" + self.__class__.__name__ + "/1.png"
-        )
-        self.image = ImageTk.PhotoImage(self.image)
+        self.image = self._load_img()
 
     @abstractmethod
     def update(self) -> None:
@@ -32,14 +29,7 @@ class Tower(ABC):
 
     def upgrade(self):
         self.level = self.level + 1
-        self.image = Image.open(
-            "images/towerImages/"
-            + self.__class__.__name__
-            + "/"
-            + str(self.level)
-            + ".png"
-        )
-        self.image = ImageTk.PhotoImage(self.image)
+        self.image = self._load_img()
         self.nextLevel()
 
     def sold(self, tower_map: dict[grid.Point, Tower]) -> None:
@@ -58,6 +48,10 @@ class Tower(ABC):
 
     def paint(self, canvas: tk.Canvas) -> None:
         canvas.create_image(self.x, self.y, image=self.image, anchor=tk.CENTER)
+
+    def _load_img(self) -> ImageTk.PhotoImage:
+        fp = f'images/towerImages/{self.__class__.__name__}/{self.level}.png'
+        return ImageTk.PhotoImage(Image.open(fp))
 
 
 class ShootingTower(Tower):
