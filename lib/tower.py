@@ -32,7 +32,7 @@ class Tower(ABC):
 
     @property
     def _img_fp(self) -> Path:
-        return Path(f'images/towerImages/{self.__class__.__name__}/{self.level}.png')
+        return Path(f'towerImages/{self.__class__.__name__}/{self.level}.png')
 
     def upgrade(self):
         self.level = self.level + 1
