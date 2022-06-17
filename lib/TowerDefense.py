@@ -639,7 +639,7 @@ class TrackingBullet(Projectile):
 
     def checkHit(self):
         if (
-            self.speed ** 2
+            self.speed**2
             > (self.x - (self.target.x)) ** 2 + (self.y - (self.target.y)) ** 2
         ):
             self.hit = True
