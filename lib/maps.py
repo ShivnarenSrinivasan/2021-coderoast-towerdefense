@@ -1,18 +1,19 @@
+from pathlib import Path
 import tkinter as tk
 from collections.abc import (
     Sequence,
 )
 
-from PIL import (
-    Image,
-    ImageTk,
+from . import (
+    constants as C,
+    io,
 )
 
 
 class Map:
     def __init__(self, name: str):
         self.name = name
-        self.image = _load_image(name)
+        self.image = io.load_img(img_path(name))
 
     def update(self) -> None:
         pass
@@ -21,12 +22,8 @@ class Map:
         canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
 
 
-def _load_image(map_name: str) -> ImageTk.PhotoImage:
-    return ImageTk.PhotoImage(Image.open(img_path(map_name)))
-
-
-def img_path(map_name: str) -> str:
-    return f'images/mapImages/{map_name}.png'
+def img_path(map_name: str) -> Path:
+    return C.Paths.IMAGES.join('mapImages', f'{map_name}.png')
 
 
 def load_template(map_name: str) -> Sequence[int]:
