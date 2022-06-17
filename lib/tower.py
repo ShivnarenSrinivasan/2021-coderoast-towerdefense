@@ -1,9 +1,7 @@
 from __future__ import annotations
 import tkinter as tk
-import functools
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import NoReturn, overload
 
 from PIL import ImageTk
 
@@ -56,35 +54,16 @@ class Tower(ABC):
         canvas.create_image(self.x, self.y, image=self.image, anchor=tk.CENTER)
 
 
-@functools.singledispatch
-def _load_img(obj: object) -> NoReturn:
-    raise ValueError(f"Unhandled type {type(obj)}")
+def load_img(tower: Tower | str) -> ImageTk.PhotoImage:
+    match tower:
+        case Tower():
+            img_fp = Path(f'tower/{tower.__class__.__name__}/{tower.level}.png')
+        case str():
+            img_fp = Path(f'tower/{towers[tower]}/1.png')
+        case _:
+            raise ValueError(f"Unhandled type {type(tower)}")
 
-
-@_load_img.register
-def _(tower: Tower) -> ImageTk.PhotoImage:
-    img_fp = Path(f'tower/{tower.__class__.__name__}/{tower.level}.png')
     return io.load_img(img_fp)
-
-
-@_load_img.register
-def _(tower: str) -> ImageTk.PhotoImage:
-    img_fp = Path(f'tower/{towers[tower]}/1.png')
-    return io.load_img(img_fp)
-
-
-@overload
-def load_img(tower: Tower) -> ImageTk.PhotoImage:
-    ...
-
-
-@overload
-def load_img(tower: str) -> ImageTk.PhotoImage:
-    ...
-
-
-def load_img(*args, **kwargs):
-    return _load_img(*args, **kwargs)
 
 
 class ShootingTower(Tower):
