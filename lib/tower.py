@@ -52,7 +52,7 @@ class Tower(ABC):
             self.y - self.range,
             self.x + self.range,
             self.y + self.range,
-            fill=None,
+            fill='',
             outline="white",
         )
 
