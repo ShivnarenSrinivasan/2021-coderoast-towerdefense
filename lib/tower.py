@@ -1,10 +1,13 @@
 from __future__ import annotations
 import tkinter as tk
 from abc import ABC, abstractmethod
+from pathlib import Path
 
-from PIL import Image, ImageTk
 
-from . import grid
+from . import (
+    grid,
+    io,
+)
 
 
 class Tower(ABC):
@@ -17,7 +20,7 @@ class Tower(ABC):
         self.y = y
         self.gridx = gridx
         self.gridy = gridy
-        self.image = self._load_img()
+        self.image = io.load_img(self._img_fp)
 
     @abstractmethod
     def update(self) -> None:
@@ -27,9 +30,13 @@ class Tower(ABC):
     def nextLevel(self) -> None:
         ...
 
+    @property
+    def _img_fp(self) -> Path:
+        return Path(f'images/towerImages/{self.__class__.__name__}/{self.level}.png')
+
     def upgrade(self):
         self.level = self.level + 1
-        self.image = self._load_img()
+        self.image = io.load_img(self._img_fp)
         self.nextLevel()
 
     def sold(self, tower_map: dict[grid.Point, Tower]) -> None:
@@ -48,10 +55,6 @@ class Tower(ABC):
 
     def paint(self, canvas: tk.Canvas) -> None:
         canvas.create_image(self.x, self.y, image=self.image, anchor=tk.CENTER)
-
-    def _load_img(self) -> ImageTk.PhotoImage:
-        fp = f'images/towerImages/{self.__class__.__name__}/{self.level}.png'
-        return ImageTk.PhotoImage(Image.open(fp))
 
 
 class ShootingTower(Tower):
