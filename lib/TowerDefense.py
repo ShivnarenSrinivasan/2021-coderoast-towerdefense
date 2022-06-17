@@ -22,12 +22,6 @@ mapSize = gridSize * blockSize
 blockGrid: list[list[block.Block]] = []
 
 blockDictionary = ["NormalBlock", "PathBlock", "WaterBlock"]
-towerDictionary = {
-    "Arrow Shooter": "ArrowShooterTower",
-    "Bullet Shooter": "BulletShooterTower",
-    "Tack Tower": "TackTower",
-    "Power Tower": "PowerTower",
-}
 
 tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
@@ -364,15 +358,7 @@ class Infoboard:
         if displayTower == None:
             return
 
-        self.towerImage = ImageTk.PhotoImage(
-            Image.open(
-                "images/towerImages/"
-                + displayTower.__class__.__name__
-                + "/"
-                + str(displayTower.level)
-                + ".png"
-            )
-        )
+        self.towerImage = tower.load_img(displayTower)
         self.canvas.create_text(80, 75, text=displayTower.name, font=("times", 20))
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
@@ -452,11 +438,7 @@ class Infoboard:
             self.towerImage = None
         else:
             self.text = selectedTower + " cost: " + str(tower.cost(selectedTower))
-            self.towerImage = ImageTk.PhotoImage(
-                Image.open(
-                    "images/towerImages/" + towerDictionary[selectedTower] + "/1.png"
-                )
-            )
+            self.towerImage = tower.load_img(selectedTower)
         self.canvas.delete(tk.ALL)  # clear the screen
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.canvas.create_text(80, 75, text=self.text)
@@ -500,7 +482,7 @@ class Towerbox:
             highlightthickness=0,
         )
         self.box.insert(tk.END, "<None>")
-        for i in towerDictionary:
+        for i in tower.towers:
             self.box.insert(tk.END, i)
         for i in range(50):
             self.box.insert(tk.END, "<None>")

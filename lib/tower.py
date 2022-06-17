@@ -1,8 +1,11 @@
 from __future__ import annotations
 import tkinter as tk
+import functools
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import NoReturn, overload
 
+from PIL import ImageTk
 
 from . import (
     grid,
@@ -20,7 +23,7 @@ class Tower(ABC):
         self.y = y
         self.gridx = gridx
         self.gridy = gridy
-        self.image = io.load_img(self._img_fp)
+        self.image = load_img(self)
 
     @abstractmethod
     def update(self) -> None:
@@ -30,13 +33,9 @@ class Tower(ABC):
     def nextLevel(self) -> None:
         ...
 
-    @property
-    def _img_fp(self) -> Path:
-        return Path(f'tower/{self.__class__.__name__}/{self.level}.png')
-
     def upgrade(self):
         self.level = self.level + 1
-        self.image = io.load_img(self._img_fp)
+        self.image = load_img(self)
         self.nextLevel()
 
     def sold(self, tower_map: dict[grid.Point, Tower]) -> None:
@@ -57,6 +56,37 @@ class Tower(ABC):
         canvas.create_image(self.x, self.y, image=self.image, anchor=tk.CENTER)
 
 
+@functools.singledispatch
+def _load_img(obj: object) -> NoReturn:
+    raise ValueError(f"Unhandled type {type(obj)}")
+
+
+@_load_img.register
+def _(tower: Tower) -> ImageTk.PhotoImage:
+    img_fp = Path(f'tower/{tower.__class__.__name__}/{tower.level}.png')
+    return io.load_img(img_fp)
+
+
+@_load_img.register
+def _(tower: str) -> ImageTk.PhotoImage:
+    img_fp = Path(f'tower/{towers[tower]}/1.png')
+    return io.load_img(img_fp)
+
+
+@overload
+def load_img(tower: Tower) -> ImageTk.PhotoImage:
+    ...
+
+
+@overload
+def load_img(tower: str) -> ImageTk.PhotoImage:
+    ...
+
+
+def load_img(*args, **kwargs):
+    return _load_img(*args, **kwargs)
+
+
 class ShootingTower(Tower):
     def __init__(self, x, y, gridx, gridy):
         super(ShootingTower, self).__init__(x, y, gridx, gridy)
@@ -71,6 +101,14 @@ class ShootingTower(Tower):
     @abstractmethod
     def prepareShot(self) -> None:
         ...
+
+
+towers = {
+    "Arrow Shooter": "ArrowShooterTower",
+    "Bullet Shooter": "BulletShooterTower",
+    "Tack Tower": "TackTower",
+    "Power Tower": "PowerTower",
+}
 
 
 def cost(tower: str) -> int:
