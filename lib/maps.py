@@ -23,7 +23,7 @@ class Map:
 
 
 def img_path(map_name: str) -> Path:
-    return C.Paths.IMAGES.join('mapImages', f'{map_name}.png')
+    return C.Paths.IMAGES.join('map', f'{map_name}.png')
 
 
 def load_template(map_name: str) -> Sequence[int]:
