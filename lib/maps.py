@@ -27,6 +27,6 @@ def img_path(map_name: str) -> Path:
 
 
 def load_template(map_name: str) -> Sequence[int]:
-    fp = Path(f'mapTexts/{map_name}.txt')
+    fp = Path(f'map/{map_name}.txt')
     grid_vals = list(map(int, (io.load_map_text(fp)).split()))
     return grid_vals
