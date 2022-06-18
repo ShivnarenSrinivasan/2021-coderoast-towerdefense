@@ -44,27 +44,25 @@ def load_template(map_name: str) -> Sequence[int]:
     return grid_vals
 
 
-def make_grid(map_name: str, blockSize: int, gridSize: int) -> list[list[Block]]:
+def make_grid(
+    map_name: str, block_dim: Dimension, grid_dim: Dimension
+) -> list[list[Block]]:
     grid_vals = load_template(map_name)
-    blockGrid = []
 
     def make_row(x: int) -> list[Block]:
-        return [make_block(x, y) for y in range(gridSize)]
+        return [make_block(x, y) for y in range(grid_dim)]
 
     def make_block(x: int, y: int) -> Block:
-        block_num = grid_vals[gridSize * y + x]
+        block_num = grid_vals[grid_dim * y + x]
         return block.factory(
-            x * blockSize + blockSize / 2,
-            y * blockSize + blockSize / 2,
+            x * block_dim + block_dim / 2,
+            y * block_dim + block_dim / 2,
             block_num,
             x,
             y,
         )
 
-    for x in range(gridSize):
-        blockGrid.append(make_row(x))
-
-    return blockGrid
+    return [make_row(x) for x in range(grid_dim)]
 
 
 def create_map(
