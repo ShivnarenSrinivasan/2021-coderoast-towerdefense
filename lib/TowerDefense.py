@@ -893,9 +893,9 @@ class Monster:
     def positionFormula(self, distance):
         self.xPos = spawnx
         self.yPos = spawny + blockSize / 2
-        self.blocks = int((distance - (distance % blockSize)) / blockSize)
-        if self.blocks != 0:
-            for i in range(self.blocks):
+        blocks = int((distance - (distance % blockSize)) / blockSize)
+        if blocks != 0:
+            for i in range(blocks):
                 if pathList[i] == 1:
                     self.xPos += blockSize
                 elif pathList[i] == 2:
@@ -905,15 +905,15 @@ class Monster:
                 else:
                     self.yPos -= blockSize
         if distance % blockSize != 0:
-            if pathList[self.blocks] == 1:
+            if pathList[blocks] == 1:
                 self.xPos += distance % blockSize
-            elif pathList[self.blocks] == 2:
+            elif pathList[blocks] == 2:
                 self.xPos -= distance % blockSize
-            elif pathList[self.blocks] == 3:
+            elif pathList[blocks] == 3:
                 self.yPos += distance % blockSize
             else:
                 self.yPos -= distance % blockSize
-        if pathList[self.blocks] == 5:
+        if pathList[blocks] == 5:
             self.gotThrough()
         return self.xPos, self.yPos
 
