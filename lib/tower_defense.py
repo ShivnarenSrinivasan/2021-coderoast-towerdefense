@@ -30,8 +30,6 @@ blockSize = Dimension(20)  # pixels wide of each block
 
 tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
-spawnx = 0
-spawny = 0
 monsters: list[IMonster] = []
 
 projectiles: list[Projectile] = []
@@ -124,7 +122,7 @@ class Wavegenerator:
         self.direction = None
         self.gridx = 0
         self.gridy = 0
-        self.findSpawn()
+        self.spawn = self.findSpawn()
         self.decideMove()
         self.ticks = 1
         self.maxTicks = 2
@@ -139,21 +137,22 @@ class Wavegenerator:
         self.currentWave = tuple(map(int, wave_line.split()))
         self.maxTicks = self.currentWave[0]
 
-    def findSpawn(self):
-        global spawnx
-        global spawny
+    def findSpawn(self) -> grid.Loc:
         for x in range(self.game.grid_dim):
             if block.is_path(self.game.grid[x][0]):
                 self.gridx = x
                 spawnx = x * self.game.block_dim + self.game.block_dim / 2
                 spawny = 0
-                return
+                return grid.Loc(spawnx, spawny)
+
         for y in range(self.game.grid_dim):
             if block.is_path(self.game.grid[0][y]):
                 self.gridy = y
                 spawnx = 0
                 spawny = y * self.game.block_dim + self.game.block_dim / 2
-                return
+                return grid.Loc(spawnx, spawny)
+
+        raise ValueError('Some invalid config of blocks')
 
     def move(self):
         pathList.append(self.direction)
@@ -217,7 +216,7 @@ class Wavegenerator:
     def spawnMonster(self):
         monster_idx = self.currentWave[self.currentMonster]
 
-        monsters.append(monster_factory(monster_idx))
+        monsters.append(monster_factory(monster_idx, self.spawn))
         self.currentMonster = self.currentMonster + 1
 
     def update(self):
@@ -815,7 +814,7 @@ def add_tower(block_: Block, tower_: str) -> None:
 
 
 class Monster:
-    def __init__(self, distance: float):
+    def __init__(self, distance: float, spawn: grid.Loc):
         self.alive = True
         self.image = None
         self.health = 0
@@ -824,10 +823,9 @@ class Monster:
         self.movement = 0.0
         self.tick = 0
         self.maxTick = 1
-        self.distanceTravelled = distance
-        if self.distanceTravelled <= 0:
-            self.distanceTravelled = 0
-        self.x, self.y = self.positionFormula(self.distanceTravelled)
+        self.distanceTravelled = max(distance, 0.0)
+        self.spawn = spawn
+        self.x, self.y = self.positionFormula()
         self.armor = 0
         self.magicresist = 0
         self.value = 0
@@ -842,39 +840,40 @@ class Monster:
     def move(self):
         if self.tick >= self.maxTick:
             self.distanceTravelled += self.movement
-            self.x, self.y = self.positionFormula(self.distanceTravelled)
-
+            self.x, self.y = self.positionFormula()
             self.movement = self.speed
             self.tick = 0
             self.maxTick = 1
         self.tick += 1
 
-    def positionFormula(self, distance):
-        self.xPos = spawnx
-        self.yPos = spawny + blockSize / 2
-        blocks = int((distance - (distance % blockSize)) / blockSize)
+    def positionFormula(self) -> grid.Loc:
+        dist = self.distanceTravelled
+        x = self.spawn.x
+        y = self.spawn.y + blockSize / 2
+        blocks = int((dist - (dist % blockSize)) / blockSize)
         if blocks != 0:
             for i in range(blocks):
                 if pathList[i] == 1:
-                    self.xPos += blockSize
+                    x += blockSize
                 elif pathList[i] == 2:
-                    self.xPos -= blockSize
+                    x -= blockSize
                 elif pathList[i] == 3:
-                    self.yPos += blockSize
+                    y += blockSize
                 else:
-                    self.yPos -= blockSize
-        if distance % blockSize != 0:
+                    y -= blockSize
+        if dist % blockSize != 0:
             if pathList[blocks] == 1:
-                self.xPos += distance % blockSize
+                x += dist % blockSize
             elif pathList[blocks] == 2:
-                self.xPos -= distance % blockSize
+                x -= dist % blockSize
             elif pathList[blocks] == 3:
-                self.yPos += distance % blockSize
+                y += dist % blockSize
             else:
-                self.yPos -= distance % blockSize
+                y -= dist % blockSize
         if pathList[blocks] == 5:
             self.gotThrough()
-        return self.xPos, self.yPos
+
+        return grid.Loc(x, y)
 
     def killed(self):
         global money
@@ -911,8 +910,8 @@ class Monster:
 
 
 class Monster1(Monster):
-    def __init__(self, distance):
-        super(Monster1, self).__init__(distance)
+    def __init__(self, distance: float, spawn: grid.Loc):
+        super().__init__(distance, spawn)
         self.maxHealth = 30
         self.health = self.maxHealth
         self.value = 5
@@ -922,8 +921,8 @@ class Monster1(Monster):
 
 
 class Monster2(Monster):
-    def __init__(self, distance):
-        super(Monster2, self).__init__(distance)
+    def __init__(self, distance: float, spawn: grid.Loc):
+        super().__init__(distance, spawn)
         self.maxHealth = 50
         self.health = self.maxHealth
         self.value = 10
@@ -935,14 +934,16 @@ class Monster2(Monster):
         global money
         money += self.value
         monsters.append(
-            Monster1(self.distanceTravelled + blockSize * (0.5 - random.random()))
+            Monster1(
+                self.distanceTravelled + blockSize * (0.5 - random.random()), self.spawn
+            )
         )
         self.die()
 
 
 class AlexMonster(Monster):
-    def __init__(self, distance):
-        super(AlexMonster, self).__init__(distance)
+    def __init__(self, distance: float, spawn: grid.Loc):
+        super().__init__(distance, spawn)
         self.maxHealth = 500
         self.health = self.maxHealth
         self.value = 100
@@ -955,14 +956,17 @@ class AlexMonster(Monster):
         money += self.value
         for _ in range(5):
             monsters.append(
-                Monster2(self.distanceTravelled + blockSize * (0.5 - random.random()))
+                Monster2(
+                    self.distanceTravelled + blockSize * (0.5 - random.random()),
+                    self.spawn,
+                )
             )
         self.die()
 
 
 class BenMonster(Monster):
-    def __init__(self, distance):
-        super(BenMonster, self).__init__(distance)
+    def __init__(self, distance: float, spawn: grid.Loc):
+        super().__init__(distance, spawn)
         self.maxHealth = 200
         self.health = self.maxHealth
         self.value = 30
@@ -975,14 +979,17 @@ class BenMonster(Monster):
         money += self.value
         for _ in range(2):
             monsters.append(
-                LeoMonster(self.distanceTravelled + blockSize * (0.5 - random.random()))
+                LeoMonster(
+                    self.distanceTravelled + blockSize * (0.5 - random.random()),
+                    self.spawn,
+                )
             )
         self.die()
 
 
 class LeoMonster(Monster):
-    def __init__(self, distance):
-        super(LeoMonster, self).__init__(distance)
+    def __init__(self, distance: float, spawn: grid.Loc):
+        super().__init__(distance, spawn)
         self.maxHealth = 20
         self.health = self.maxHealth
         self.value = 2
@@ -992,8 +999,8 @@ class LeoMonster(Monster):
 
 
 class MonsterBig(Monster):
-    def __init__(self, distance):
-        super(MonsterBig, self).__init__(distance)
+    def __init__(self, distance: float, spawn: grid.Loc):
+        super().__init__(distance, spawn)
         self.maxHealth = 1000
         self.health = self.maxHealth
         self.value = 10
@@ -1002,7 +1009,7 @@ class MonsterBig(Monster):
         self.axis = 3 * blockSize / 2
 
 
-def monster_factory(idx: int) -> Monster:
+def monster_factory(idx: int, spawn: grid.Loc) -> Monster:
     monsters_ = (
         Monster1,
         Monster2,
@@ -1011,5 +1018,5 @@ def monster_factory(idx: int) -> Monster:
         LeoMonster,
         MonsterBig,
     )
-    monster_ = monsters_[idx](0.0)
+    monster_ = monsters_[idx](0.0, spawn)
     return monster_

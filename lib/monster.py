@@ -20,8 +20,8 @@ from .protocols import (
 class IMonster(GameObject, Movable, Protocol):
     alive: bool
     health: int
-    x: int
-    y: int
+    x: float
+    y: float
 
     def killed(self) -> None:
         ...

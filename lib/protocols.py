@@ -1,6 +1,8 @@
 import tkinter as tk
 from typing import Protocol
 
+from .grid import Loc
+
 
 class Movable(Protocol):
     distanceTravelled: float
@@ -8,7 +10,7 @@ class Movable(Protocol):
     def move(self) -> None:
         ...
 
-    def positionFormula(self, distance: float) -> None:
+    def positionFormula(self) -> Loc:
         ...
 
 
