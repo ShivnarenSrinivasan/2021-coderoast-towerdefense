@@ -1,6 +1,7 @@
 from __future__ import annotations
 import math
 import random
+from collections.abc import Sequence
 from enum import Enum, auto
 from functools import cached_property
 import tkinter as tk
@@ -119,7 +120,7 @@ class TowerDefenseGame(Game):
 class Wavegenerator:
     def __init__(self, game: TowerDefenseGame):
         self.game = game
-        self.currentWave = []
+        self.currentWave: Sequence[int]
         self.currentMonster = 0
         self.direction = None
         self.gridx = 0
@@ -136,7 +137,7 @@ class Wavegenerator:
         wave_line = self.waveFile.readline()
         if len(wave_line) == 0:
             return
-        self.currentWave = list(map(int, wave_line.split()))
+        self.currentWave = tuple(map(int, wave_line.split()))
         self.maxTicks = self.currentWave[0]
 
     def findSpawn(self):
@@ -267,6 +268,7 @@ class TargetButton(buttons.Button):
         self.type = myType
 
     def press(self):
+        assert displayTower is not None
         displayTower.targetList = self.type
 
 
