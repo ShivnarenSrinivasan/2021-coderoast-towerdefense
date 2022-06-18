@@ -872,10 +872,7 @@ class Monster:
         self.armor = 0
         self.magicresist = 0
         self.value = 0
-        self.image = Image.open(
-            "images/monsterImages/" + self.__class__.__name__ + ".png"
-        )
-        self.image = ImageTk.PhotoImage(self.image)
+        self.image = monster.load_img(self)
 
     def update(self):
         if self.health <= 0:

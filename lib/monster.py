@@ -1,11 +1,15 @@
 from collections.abc import (
     Sequence,
 )
+from pathlib import Path
 from typing import (
     Protocol,
     runtime_checkable,
 )
 
+from PIL import ImageTk
+
+from . import io
 from .protocols import (
     Movable,
     GameObject,
@@ -45,3 +49,8 @@ def sort_distance(
     monsters: Sequence[IMonster], reverse: bool = False
 ) -> list[IMonster]:
     return sorted(monsters, key=lambda x: x.distanceTravelled, reverse=reverse)
+
+
+def load_img(monster: IMonster) -> ImageTk.PhotoImage:
+    img_fp = Path(f'monsterImages/{monster.__class__.__name__}.png')
+    return io.load_img(img_fp)
