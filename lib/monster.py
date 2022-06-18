@@ -1,55 +1,42 @@
-import tkinter as tk
-from abc import (
-    ABC,
-    abstractmethod,
-)
 from collections.abc import (
     Sequence,
 )
+from typing import (
+    Protocol,
+    runtime_checkable,
+)
+
 from .protocols import Movable
+from .game import GameObject
 
 
-class BaseMonster(ABC, Movable):
+@runtime_checkable
+class IMonster(GameObject, Movable, Protocol):
     alive: bool
     health: int
     x: int
     y: int
-    distanceTravelled: float
 
-    @abstractmethod
     def __init__(self, distance: int):
         ...
 
-    @abstractmethod
-    def update(self) -> None:
-        ...
-
-    @abstractmethod
     def move(self) -> None:
         ...
 
-    @abstractmethod
     def positionFormula(self, distance: float) -> None:
         ...
 
-    @abstractmethod
     def killed(self) -> None:
         ...
 
-    @abstractmethod
     def gotThrough(self) -> None:
         ...
 
-    @abstractmethod
     def die(self) -> None:
         ...
 
-    @abstractmethod
-    def paint(self, canvas: tk.Canvas) -> None:
-        ...
 
-
-def gen_list(monsters: list[BaseMonster]) -> list[list[BaseMonster]]:
+def gen_list(monsters: list[IMonster]) -> list[list[IMonster]]:
 
     monstersByHealth = sorted(monsters, key=lambda x: x.health, reverse=True)
     monstersByHealthReversed = sorted(monsters, key=lambda x: x.health, reverse=False)
@@ -62,6 +49,6 @@ def gen_list(monsters: list[BaseMonster]) -> list[list[BaseMonster]]:
 
 
 def sort_distance(
-    monsters: Sequence[BaseMonster], reverse: bool = False
-) -> list[BaseMonster]:
+    monsters: Sequence[IMonster], reverse: bool = False
+) -> list[IMonster]:
     return sorted(monsters, key=lambda x: x.distanceTravelled, reverse=reverse)

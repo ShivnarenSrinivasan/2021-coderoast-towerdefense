@@ -14,7 +14,7 @@ from . import (
     monster,
     tower,
 )
-from .monster import BaseMonster
+from .monster import IMonster
 
 from .game import Game
 
@@ -30,7 +30,7 @@ tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
 spawnx = 0
 spawny = 0
-monsters: list[BaseMonster] = []
+monsters: list[IMonster] = []
 
 projectiles: list[Projectile] = []
 health = 100
@@ -855,7 +855,7 @@ def add_tower(block: block.Block, _tower: str) -> None:
     money -= tower.cost(_tower)
 
 
-class Monster(BaseMonster):
+class Monster:
     def __init__(self, distance: float):
         self.alive = True
         self.image = None
