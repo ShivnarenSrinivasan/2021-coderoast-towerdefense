@@ -45,9 +45,7 @@ def load_template(map_name: str) -> Sequence[int]:
     return grid_vals
 
 
-def make_grid(
-    map_name: str, block_dim: Dimension, grid_dim: Dimension
-) -> Grid[Block]:
+def make_grid(map_name: str, block_dim: Dimension, grid_dim: Dimension) -> Grid[Block]:
     grid_vals = load_template(map_name)
 
     def make_row(x: int) -> Sequence[Block]:

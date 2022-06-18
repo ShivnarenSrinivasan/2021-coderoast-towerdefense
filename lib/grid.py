@@ -1,8 +1,15 @@
-from collections.abc import Generator, Sequence
-from typing import NamedTuple, TypeVar
+from collections.abc import (
+    Generator,
+    Sequence,
+)
+from typing import (
+    NamedTuple,
+    TypeVar,
+)
 
 T = TypeVar('T')
 Grid = Sequence[Sequence[T]]
+
 
 class Loc(NamedTuple):
     """(x, y) coord pos of grid."""
