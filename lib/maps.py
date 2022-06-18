@@ -13,7 +13,7 @@ from . import (
 class Map:
     def __init__(self, name: str):
         self.name = name
-        self.image = io.load_img(img_path(name))
+        self.image = io.load_img_tk(img_path(name))
 
     def update(self) -> None:
         pass

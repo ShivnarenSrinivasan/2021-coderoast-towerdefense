@@ -63,7 +63,7 @@ def load_img(tower: Tower | str) -> ImageTk.PhotoImage:
         case _:
             raise ValueError(f"Unhandled type {type(tower)}")
 
-    return io.load_img(img_fp)
+    return io.load_img_tk(img_fp)
 
 
 class ShootingTower(Tower):

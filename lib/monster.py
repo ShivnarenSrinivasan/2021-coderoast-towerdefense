@@ -52,5 +52,5 @@ def sort_distance(
 
 
 def load_img(monster: IMonster) -> ImageTk.PhotoImage:
-    img_fp = Path(f'monsterImages/{monster.__class__.__name__}.png')
-    return io.load_img(img_fp)
+    img_fp = Path(f'monster/{monster.__class__.__name__}.png')
+    return io.load_img_tk(img_fp)
