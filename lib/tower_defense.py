@@ -48,6 +48,7 @@ class TowerDefenseGame(Game):
         title: str = "Tower Defense",
         grid_dim: Dimension = Dimension(30),
         block_dim: Dimension = blockSize,
+        map_name: str = 'LeoMap',
     ):
         """Create Tower Defense game.
 
@@ -61,17 +62,21 @@ class TowerDefenseGame(Game):
         self.displayboard = Displayboard(self)
         self.infoboard = Infoboard(self)
         self.towerbox = Towerbox(self)
-        self.grid = self._load_map()
-        self.add_object(Mouse(self))
-        self.add_object(Wavegenerator(self))
+        self.grid = self._load_grid(map_name)
+
+        self.add_objects(
+            [
+                maps.Map(map_name),
+                Wavegenerator(self),
+                Mouse(self),
+            ]
+        )
 
     @cached_property
     def size(self) -> Dimension:
         return maps.size(self.grid_dim, self.block_dim)
 
-    def _load_map(self, map_name: str = 'LeoMap') -> list[list[Block]]:
-        _map = maps.Map(map_name)
-        self.add_object(_map)
+    def _load_grid(self, map_name: str) -> list[list[Block]]:
         return maps.make_grid(map_name, self.block_dim, self.grid_dim)
 
     @property

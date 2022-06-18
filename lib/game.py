@@ -1,6 +1,6 @@
 import tkinter as tk
+from collections.abc import Iterable
 from typing import Optional
-
 from .protocols import GameObject
 
 
@@ -28,8 +28,8 @@ class Game:
 
         self.objects: list[GameObject] = []
 
-    def add_object(self, obj: GameObject) -> None:
-        self.objects.append(obj)
+    def add_objects(self, objs: Iterable[GameObject]) -> None:
+        self.objects.extend(objs)
 
     def remove_object(self, obj: GameObject) -> None:
         self.objects.remove(obj)
