@@ -552,14 +552,14 @@ class Mouse:
         if not self.pressed:
             return None
 
-        block = blockGrid[self.gridx][self.gridy]
-        if block.grid_loc in tower_map:
+        block_ = blockGrid[self.gridx][self.gridy]
+        if block_.grid_loc in tower_map:
             if not is_tower_selected():
-                select_tower(block.grid_loc)
+                select_tower(block_.grid_loc)
                 self.game.infoboard.displaySpecific()
         else:
-            if is_tower_selected() and can_add_tower(block, selectedTower):
-                add_tower(block, selectedTower)
+            if is_tower_selected() and can_add_tower(block_, selectedTower):
+                add_tower(block_, selectedTower)
 
     def _out_update(self) -> None:
         pos = grid.Point(self.x - self.xoffset, self.y - self.yoffset)
@@ -1042,7 +1042,7 @@ class MonsterBig(Monster):
 
 
 def monster_factory(idx: int) -> Monster:
-    monsters = (
+    monsters_ = (
         Monster1,
         Monster2,
         AlexMonster,
@@ -1050,11 +1050,11 @@ def monster_factory(idx: int) -> Monster:
         LeoMonster,
         MonsterBig,
     )
-    monster = monsters[idx](0.0)
-    return monster
+    monster_ = monsters_[idx](0.0)
+    return monster_
 
 
-def paint(_block: Block, img_canvas: Image.Image, axis: float = blockSize / 2) -> None:
-    image = block.load_img(_block)
-    offset = (int(_block.loc.x - axis), int(_block.loc.y - axis))
+def paint(block_: Block, img_canvas: Image.Image, axis: float = blockSize / 2) -> None:
+    image = block.load_img(block_)
+    offset = (int(block_.loc.x - axis), int(block_.loc.y - axis))
     img_canvas.paste(image, offset)
