@@ -3,6 +3,7 @@ import tkinter as tk
 from collections.abc import (
     Sequence,
 )
+from typing import NewType
 
 from PIL import Image
 
@@ -13,6 +14,8 @@ from . import (
     grid,
 )
 from .block import Block
+
+Dimension = NewType('Dimension', int)
 
 
 class Map:
@@ -27,8 +30,8 @@ class Map:
         canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
 
 
-def size(grid_dim: int, block_dim: int) -> int:
-    return grid_dim * block_dim
+def size(grid_dim: Dimension, block_dim: Dimension) -> Dimension:
+    return Dimension(grid_dim * block_dim)
 
 
 def img_path(map_name: str) -> Path:
@@ -66,14 +69,14 @@ def make_grid(
 
 def create_map(
     map_name: str,
-    map_size: int,
-    blockGrid: list[list[Block]],
-    blockSize: int,
-    gridSize: int,
+    block_grid: list[list[Block]],
+    block_dim: Dimension,
+    grid_dim: Dimension,
 ) -> None:
+    map_size = size(grid_dim, block_dim)
     map_canvas = Image.new("RGBA", (map_size, map_size), (255, 255, 255, 255))
-    make_grid(map_name, blockGrid, blockSize, gridSize)
-    paint_map_canvas(blockGrid, blockSize, map_canvas)
+    make_grid(map_name, block_grid, block_dim, grid_dim)
+    paint_map_canvas(block_grid, block_dim, map_canvas)
     map_canvas.save(img_path(map_name))
 
 

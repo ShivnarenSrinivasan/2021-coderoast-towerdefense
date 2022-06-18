@@ -16,12 +16,13 @@ from . import (
     tower,
 )
 from .block import Block
+from .maps import Dimension
 from .monster import IMonster
 
 from .game import Game
 
-gridSize = 30  # the height and width of the array of blocks
-blockSize = 20  # pixels wide of each block
+gridSize = Dimension(30)  # the height and width of the array of blocks
+blockSize = Dimension(20)  # pixels wide of each block
 
 blockGrid: list[list[Block]] = []
 
@@ -48,8 +49,8 @@ class TowerDefenseGame(Game):
     def __init__(
         self,
         title: str = "Tower Defense",
-        grid_dim: int = gridSize,
-        block_dim: int = blockSize,
+        grid_dim: Dimension = gridSize,
+        block_dim: Dimension = blockSize,
     ):
         size = maps.size(grid_dim, block_dim)
         super().__init__(title, size, size)
@@ -58,7 +59,7 @@ class TowerDefenseGame(Game):
         self.state = TowerDefenseGameState.IDLE
 
     @cached_property
-    def size(self) -> int:
+    def size(self) -> Dimension:
         return maps.size(self.grid_dim, self.block_dim)
 
     def initialize(self) -> None:
