@@ -14,6 +14,7 @@ from . import (
     monster,
     tower,
 )
+from .block import Block
 from .monster import IMonster
 
 from .game import Game
@@ -22,7 +23,7 @@ gridSize = 30  # the height and width of the array of blocks
 blockSize = 20  # pixels wide of each block
 mapSize = gridSize * blockSize
 
-blockGrid: list[list[block.Block]] = []
+blockGrid: list[list[Block]] = []
 
 blockDictionary = ["NormalBlock", "PathBlock", "WaterBlock"]
 
@@ -114,10 +115,10 @@ def make_grid(map_name: str) -> None:
     grid_vals = maps.load_template(map_name)
     blockGrid.clear()
 
-    def make_row(x: int) -> list[block.Block]:
+    def make_row(x: int) -> list[Block]:
         return [make_block(x, y) for y in range(gridSize)]
 
-    def make_block(x: int, y: int) -> block.Block:
+    def make_block(x: int, y: int) -> Block:
         block_num = grid_vals[gridSize * y + x]
         return block.factory(
             x * blockSize + blockSize / 2,
@@ -132,7 +133,7 @@ def make_grid(map_name: str) -> None:
 
 
 def paint_map_canvas(
-    block_grid: list[list[block.Block]], map_canvas: Image.Image
+    block_grid: list[list[Block]], map_canvas: Image.Image
 ) -> None:
     for _block in grid.grid_iter(block_grid):
         paint(_block, map_canvas)
@@ -841,7 +842,7 @@ def is_tower_selected() -> bool:
     return selectedTower != '<None>'
 
 
-def can_add_tower(block: block.Block, _tower: str) -> bool:
+def can_add_tower(block: Block, _tower: str) -> bool:
     return all([block.can_place, can_buy_tower(money, _tower)])
 
 
@@ -849,7 +850,7 @@ def can_buy_tower(money: int, _tower: str) -> bool:
     return money >= tower.cost(_tower)
 
 
-def add_tower(block: block.Block, _tower: str) -> None:
+def add_tower(block: Block, _tower: str) -> None:
     global money
     tower_map[block.grid_loc] = tower_factory(_tower, block.loc, block.grid_loc)
     money -= tower.cost(_tower)
@@ -1056,7 +1057,7 @@ def monster_factory(idx: int) -> Monster:
 
 
 def paint(
-    _block: block.Block, img_canvas: Image.Image, axis: float = blockSize / 2
+    _block: Block, img_canvas: Image.Image, axis: float = blockSize / 2
 ) -> None:
     image = Image.open("images/blockImages/" + _block.__class__.__name__ + ".png")
     offset = (int(_block.loc.x - axis), int(_block.loc.y - axis))
