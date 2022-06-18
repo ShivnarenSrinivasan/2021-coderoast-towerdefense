@@ -5,10 +5,8 @@ from .protocols import GameObject
 
 
 class Game:
-    def __init__(
-        self, title: str, width: int, height: int, timestep: int = 50
-    ):  # setting up the window for the game here
-        self.root = tk.Tk()  # saying this window will use tkinter
+    def __init__(self, title: str, width: int, height: int, timestep: int = 50):
+        self.root = tk.Tk()
         self.root.title(title)
         self.running = False
         self.root.protocol("WM_DELETE_WINDOW", self.end)
