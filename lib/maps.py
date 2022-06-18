@@ -44,11 +44,9 @@ def load_template(map_name: str) -> Sequence[int]:
     return grid_vals
 
 
-def make_grid(
-    map_name: str, blockGrid: list[list[Block]], blockSize: int, gridSize: int
-) -> None:
+def make_grid(map_name: str, blockSize: int, gridSize: int) -> list[list[Block]]:
     grid_vals = load_template(map_name)
-    blockGrid.clear()
+    blockGrid = []
 
     def make_row(x: int) -> list[Block]:
         return [make_block(x, y) for y in range(gridSize)]
@@ -66,6 +64,8 @@ def make_grid(
     for x in range(gridSize):
         blockGrid.append(make_row(x))
 
+    return blockGrid
+
 
 def create_map(
     map_name: str,
@@ -75,7 +75,7 @@ def create_map(
 ) -> None:
     map_size = size(grid_dim, block_dim)
     map_canvas = Image.new("RGBA", (map_size, map_size), (255, 255, 255, 255))
-    make_grid(map_name, block_grid, block_dim, grid_dim)
+    block_grid = make_grid(map_name, block_dim, grid_dim)
     paint_map_canvas(block_grid, block_dim, map_canvas)
     map_canvas.save(img_path(map_name))
 

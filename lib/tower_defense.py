@@ -23,8 +23,6 @@ from .game import Game
 
 blockSize = Dimension(20)  # pixels wide of each block
 
-blockGrid: list[list[Block]] = []
-
 tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
 spawnx = 0
@@ -60,6 +58,7 @@ class TowerDefenseGame(Game):
         self.grid_dim = grid_dim
         self.block_dim = block_dim
         self.state = TowerDefenseGameState.IDLE
+        self.grid: list[list[Block]]
 
     @cached_property
     def size(self) -> Dimension:
@@ -71,14 +70,14 @@ class TowerDefenseGame(Game):
         self.infoboard = Infoboard(self)
 
         self.towerbox = Towerbox(self)
-        self._load_map()
+        self.grid = self._load_map()
         self.add_object(Mouse(self))
         self.add_object(Wavegenerator(self))
 
-    def _load_map(self, map_name: str = 'LeoMap') -> None:
+    def _load_map(self, map_name: str = 'LeoMap') -> list[list[Block]]:
         _map = maps.Map(map_name)
-        maps.make_grid(map_name, blockGrid, self.block_dim, self.grid_dim)
         self.add_object(_map)
+        return maps.make_grid(map_name, self.block_dim, self.grid_dim)
 
     @property
     def is_idle(self) -> bool:
@@ -143,13 +142,13 @@ class Wavegenerator:
         global spawnx
         global spawny
         for x in range(self.game.grid_dim):
-            if block.is_path(blockGrid[x][0]):
+            if block.is_path(self.game.grid[x][0]):
                 self.gridx = x
                 spawnx = x * self.game.block_dim + self.game.block_dim / 2
                 spawny = 0
                 return
         for y in range(self.game.grid_dim):
-            if block.is_path(blockGrid[0][y]):
+            if block.is_path(self.game.grid[0][y]):
                 self.gridy = y
                 spawnx = 0
                 spawny = y * self.game.block_dim + self.game.block_dim / 2
@@ -174,7 +173,7 @@ class Wavegenerator:
             and self.gridy >= 0
             and self.gridy <= self.game.grid_dim - 1
         ):
-            if block.is_path(blockGrid[self.gridx + 1][self.gridy]):
+            if block.is_path(self.game.grid[self.gridx + 1][self.gridy]):
                 self.direction = 1
                 self.move()
                 return
@@ -185,7 +184,7 @@ class Wavegenerator:
             and self.gridy >= 0
             and self.gridy <= self.game.grid_dim - 1
         ):
-            if block.is_path(blockGrid[self.gridx - 1][self.gridy]):
+            if block.is_path(self.game.grid[self.gridx - 1][self.gridy]):
                 self.direction = 2
                 self.move()
                 return
@@ -196,7 +195,7 @@ class Wavegenerator:
             and self.gridx >= 0
             and self.gridx <= self.game.grid_dim - 1
         ):
-            if block.is_path(blockGrid[self.gridx][self.gridy + 1]):
+            if block.is_path(self.game.grid[self.gridx][self.gridy + 1]):
                 self.direction = 3
                 self.move()
                 return
@@ -207,7 +206,7 @@ class Wavegenerator:
             and self.gridx >= 0
             and self.gridx <= self.game.grid_dim - 1
         ):
-            if block.is_path(blockGrid[self.gridx][self.gridy - 1]):
+            if block.is_path(self.game.grid[self.gridx][self.gridy - 1]):
                 self.direction = 4
                 self.move()
                 return
@@ -535,7 +534,7 @@ class Mouse:
         if not self.pressed:
             return None
 
-        block_ = blockGrid[self.gridx][self.gridy]
+        block_ = self.game.grid[self.gridx][self.gridy]
         if block_.grid_loc in tower_map:
             if not is_tower_selected():
                 select_tower(block_.grid_loc)
@@ -553,7 +552,7 @@ class Mouse:
         if not self._in_grid():
             return None
 
-        block_ = blockGrid[self.gridx][self.gridy]
+        block_ = self.game.grid[self.gridx][self.gridy]
         img = self.image if block.is_empty(block_) else self.canNotPressImage
         canvas.create_image(
             self.gridx * self.game.block_dim,
