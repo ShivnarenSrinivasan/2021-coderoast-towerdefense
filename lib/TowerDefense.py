@@ -570,8 +570,8 @@ class Mouse:
         if not self._in_grid():
             return None
 
-        block = blockGrid[self.gridx][self.gridy]
-        img = self.image if block.can_place else self.canNotPressImage
+        block_ = blockGrid[self.gridx][self.gridy]
+        img = self.image if block_.can_place else self.canNotPressImage
         canvas.create_image(
             self.gridx * blockSize,
             self.gridy * blockSize,
