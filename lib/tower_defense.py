@@ -24,7 +24,7 @@ from .grid import Grid
 from .maps import Dimension
 from .monster import IMonster
 
-from .game import Game, TowerDefenseGameState
+from .game import Game, GameState
 
 blockSize = Dimension(20)  # pixels wide of each block
 
@@ -57,7 +57,7 @@ class TowerDefenseGame(Game):
         super().__init__(title, size, size)
         self.grid_dim = grid_dim
         self.block_dim = block_dim
-        self.state = TowerDefenseGameState.IDLE
+        self.state = GameState.IDLE
         self.displayboard = display.Displayboard(self.frame, health, money)
         self.infoboard = Infoboard(self)
         self.towerbox = Towerbox(self)
@@ -80,7 +80,7 @@ class TowerDefenseGame(Game):
 
     @property
     def is_idle(self) -> bool:
-        return self.state is TowerDefenseGameState.IDLE
+        return self.state is GameState.IDLE
 
     def update(self) -> None:
         super().update()
@@ -112,7 +112,7 @@ class TowerDefenseGame(Game):
             'blue' if self.is_idle and len(monsters) == 0 else 'red'
         )
 
-    def set_state(self, state: TowerDefenseGameState) -> None:
+    def set_state(self, state: GameState) -> None:
         self.state = state
 
 
@@ -131,7 +131,7 @@ class Wavegenerator:
         self.waveFile = open("texts/waveTexts/WaveGenerator2.txt", "r")
 
     def getWave(self) -> None:
-        self.game.set_state(TowerDefenseGameState.SPAWNING)
+        self.game.set_state(GameState.SPAWNING)
         self.currentMonster = 1
         wave_line = self.waveFile.readline()
         if len(wave_line) == 0:
@@ -221,11 +221,11 @@ class Wavegenerator:
         self.currentMonster = self.currentMonster + 1
 
     def update(self):
-        if self.game.state == TowerDefenseGameState.WAIT_FOR_SPAWN:
+        if self.game.state == GameState.WAIT_FOR_SPAWN:
             self.getWave()
-        elif self.game.state == TowerDefenseGameState.SPAWNING:
+        elif self.game.state == GameState.SPAWNING:
             if self.currentMonster == len(self.currentWave):
-                self.game.set_state(TowerDefenseGameState.IDLE)
+                self.game.set_state(GameState.IDLE)
                 return
             self.ticks = self.ticks + 1
             if self.ticks == self.maxTicks:
@@ -512,7 +512,7 @@ class Mouse:
                 can_spawn(self.game, monsters),
             ]
         ):
-            self.game.set_state(TowerDefenseGameState.WAIT_FOR_SPAWN)
+            self.game.set_state(GameState.WAIT_FOR_SPAWN)
         self.game.infoboard.buttonsCheck(self.pressed, pos)
 
     def paint(self, canvas: tk.Canvas) -> None:

@@ -5,7 +5,7 @@ from typing import Optional
 from .protocols import GameObject
 
 
-class TowerDefenseGameState(Enum):
+class GameState(Enum):
     IDLE = auto()
     WAIT_FOR_SPAWN = auto()
     SPAWNING = auto()
