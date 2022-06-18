@@ -78,20 +78,20 @@ class TowerDefenseGame(Game):
         for p in projectiles:
             p.update()
 
-        for m in monsters:
-            m.update()
+        for monster_ in monsters:
+            monster_.update()
 
-        for _tower in tower_map.values():
-            _tower.update()
+        for tower_ in tower_map.values():
+            tower_.update()
 
     def paint(self) -> None:
         super().paint()
 
-        for _tower in tower_map.values():
-            _tower.paint(self.canvas)
+        for tower_ in tower_map.values():
+            tower_.paint(self.canvas)
 
-        for _monster in monster.sort_distance(monsters):
-            _monster.paint(self.canvas)
+        for monster_ in monster.sort_distance(monsters):
+            monster_.paint(self.canvas)
 
         for projectile in projectiles:
             projectile.paint(self.canvas)
@@ -132,11 +132,9 @@ def make_grid(map_name: str) -> None:
         blockGrid.append(make_row(x))
 
 
-def paint_map_canvas(
-    block_grid: list[list[Block]], map_canvas: Image.Image
-) -> None:
-    for _block in grid.grid_iter(block_grid):
-        paint(_block, map_canvas)
+def paint_map_canvas(block_grid: list[list[Block]], map_canvas: Image.Image) -> None:
+    for block_ in grid.grid_iter(block_grid):
+        paint(block_, map_canvas)
 
 
 class Wavegenerator:
@@ -659,12 +657,12 @@ class AngledProjectile(Projectile):
         self.distance = 0
 
     def checkHit(self):
-        for monster in monsters:
-            if (monster.x - self.x) ** 2 + (monster.y - self.y) ** 2 <= (
+        for monster_ in monsters:
+            if (monster_.x - self.x) ** 2 + (monster_.y - self.y) ** 2 <= (
                 blockSize
             ) ** 2:
                 self.hit = True
-                self.target = monster
+                self.target = monster_
                 return
 
     def gotMonster(self):
@@ -698,11 +696,11 @@ class TargetingTower(tower.ShootingTower):
             self.ticks += 1
 
         if not self.stickyTarget:
-            for m in monster_list:
-                if (self.range + blockSize / 2) ** 2 >= (self.x - m.x) ** 2 + (
-                    self.y - m.y
+            for monster_ in monster_list:
+                if (self.range + blockSize / 2) ** 2 >= (self.x - monster_.x) ** 2 + (
+                    self.y - monster_.y
                 ) ** 2:
-                    self.target = m
+                    self.target = monster_
 
         if self.target:
             if (
@@ -717,11 +715,11 @@ class TargetingTower(tower.ShootingTower):
             else:
                 self.target = None
         elif self.stickyTarget:
-            for m in monster_list:
-                if (self.range + blockSize / 2) ** 2 >= (self.x - m.x) ** 2 + (
-                    self.y - m.y
+            for monster_ in monster_list:
+                if (self.range + blockSize / 2) ** 2 >= (self.x - monster_.x) ** 2 + (
+                    self.y - monster_.y
                 ) ** 2:
-                    self.target = m
+                    self.target = monster_
 
 
 class ArrowShooterTower(TargetingTower):
@@ -820,40 +818,40 @@ class TackTower(TargetingTower):
         ...
 
 
-def tower_factory(tower: str, loc: grid.Loc, grid: grid.Point) -> tower.Tower:
+def tower_factory(tower_: str, loc: grid.Loc, grid_: grid.Point) -> tower.Tower:
     towers = {
         "Arrow Shooter": ArrowShooterTower,
         "Bullet Shooter": BulletShooterTower,
         "Tack Tower": TackTower,
         "Power Tower": PowerTower,
     }
-    _tower = towers[tower]
-    return _tower(loc.x, loc.y, grid.x, grid.y)
+    tower_type = towers[tower_]
+    return tower_type(loc.x, loc.y, grid_.x, grid_.y)
 
 
-def select_tower(_grid: grid.Point) -> None:
-    _tower = tower_map[_grid]
-    _tower.clicked = True
+def select_tower(grid_: grid.Point) -> None:
+    tower_ = tower_map[grid_]
+    tower_.clicked = True
     global displayTower
-    displayTower = _tower
+    displayTower = tower_
 
 
 def is_tower_selected() -> bool:
     return selectedTower != '<None>'
 
 
-def can_add_tower(block: Block, _tower: str) -> bool:
-    return all([block.can_place, can_buy_tower(money, _tower)])
+def can_add_tower(block_: Block, tower_: str) -> bool:
+    return all([block_.can_place, can_buy_tower(money, tower_)])
 
 
-def can_buy_tower(money: int, _tower: str) -> bool:
-    return money >= tower.cost(_tower)
+def can_buy_tower(money_: int, tower_: str) -> bool:
+    return money_ >= tower.cost(tower_)
 
 
-def add_tower(block: Block, _tower: str) -> None:
+def add_tower(block_: Block, tower_: str) -> None:
     global money
-    tower_map[block.grid_loc] = tower_factory(_tower, block.loc, block.grid_loc)
-    money -= tower.cost(_tower)
+    tower_map[block_.grid_loc] = tower_factory(tower_, block_.loc, block_.grid_loc)
+    money -= tower.cost(tower_)
 
 
 class Monster:
@@ -1056,9 +1054,7 @@ def monster_factory(idx: int) -> Monster:
     return monster
 
 
-def paint(
-    _block: Block, img_canvas: Image.Image, axis: float = blockSize / 2
-) -> None:
+def paint(_block: Block, img_canvas: Image.Image, axis: float = blockSize / 2) -> None:
     image = Image.open("images/blockImages/" + _block.__class__.__name__ + ".png")
     offset = (int(_block.loc.x - axis), int(_block.loc.y - axis))
     img_canvas.paste(image, offset)
