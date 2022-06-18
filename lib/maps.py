@@ -27,6 +27,10 @@ class Map:
         canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
 
 
+def size(grid_dim: int, block_dim: int) -> int:
+    return grid_dim * block_dim
+
+
 def img_path(map_name: str) -> Path:
     return C.Paths.IMAGES.join('map', f'{map_name}.png')
 

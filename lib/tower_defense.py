@@ -2,6 +2,7 @@ from __future__ import annotations
 import math
 import random
 from enum import Enum, auto
+from functools import cached_property
 import tkinter as tk
 from PIL import Image, ImageTk
 
@@ -21,7 +22,6 @@ from .game import Game
 
 gridSize = 30  # the height and width of the array of blocks
 blockSize = 20  # pixels wide of each block
-mapSize = gridSize * blockSize
 
 blockGrid: list[list[Block]] = []
 
@@ -46,10 +46,20 @@ class TowerDefenseGameState(Enum):
 
 class TowerDefenseGame(Game):
     def __init__(
-        self, title: str = "Tower Defense", width: int = mapSize, height: int = mapSize
+        self,
+        title: str = "Tower Defense",
+        grid_dim: int = gridSize,
+        block_dim: int = blockSize,
     ):
-        super().__init__(title, width, height)
+        size = maps.size(grid_dim, block_dim)
+        super().__init__(title, size, size)
+        self.grid_dim = grid_dim
+        self.block_dim = block_dim
         self.state = TowerDefenseGameState.IDLE
+
+    @cached_property
+    def size(self) -> int:
+        return maps.size(self.grid_dim, self.block_dim)
 
     def initialize(self) -> None:
         self.displayboard = Displayboard(self)
@@ -482,13 +492,13 @@ class Mouse:
             self.xoffset = 0
             self.yoffset = 0
         elif event.widget == self.game.infoboard.canvas:
-            self.xoffset = mapSize
+            self.xoffset = self.game.size
             self.yoffset = 0
         elif event.widget == self.game.towerbox.box:
-            self.xoffset = mapSize
+            self.xoffset = self.game.size
             self.yoffset = 174
         elif event.widget == self.game.displayboard.canvas:
-            self.yoffset = mapSize
+            self.yoffset = self.game.size
             self.xoffset = 0
         self.x = event.x + self.xoffset  # sets the "Mouse" x to the real mouse's x
         self.y = event.y + self.yoffset  # sets the "Mouse" y to the real mouse's y
