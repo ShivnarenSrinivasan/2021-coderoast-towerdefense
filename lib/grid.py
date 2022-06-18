@@ -1,6 +1,8 @@
 from collections.abc import Generator, Sequence
 from typing import NamedTuple, TypeVar
 
+T = TypeVar('T')
+Grid = Sequence[Sequence[T]]
 
 class Loc(NamedTuple):
     """(x, y) coord pos of grid."""
@@ -25,10 +27,7 @@ def point_iter(grid_size: int) -> Generator[Point, None, None]:
             yield Point(x, y)
 
 
-T = TypeVar('T')
-
-
-def grid_iter(grid: Sequence[Sequence[T]]) -> Generator[T, None, None]:
+def grid_iter(grid: Grid[T]) -> Generator[T, None, None]:
     """Return iterator over elems of 2-D array."""
     for row in grid:
         for item in row:

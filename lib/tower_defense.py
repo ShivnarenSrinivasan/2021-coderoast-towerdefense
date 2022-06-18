@@ -16,6 +16,7 @@ from . import (
     tower,
 )
 from .block import Block
+from .grid import Grid
 from .maps import Dimension
 from .monster import IMonster
 
@@ -76,7 +77,7 @@ class TowerDefenseGame(Game):
     def size(self) -> Dimension:
         return maps.size(self.grid_dim, self.block_dim)
 
-    def _load_grid(self, map_name: str) -> list[list[Block]]:
+    def _load_grid(self, map_name: str) -> Grid[Block]:
         return maps.make_grid(map_name, self.block_dim, self.grid_dim)
 
     @property

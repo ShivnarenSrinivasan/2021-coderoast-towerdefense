@@ -14,6 +14,7 @@ from . import (
     grid,
 )
 from .block import Block
+from .grid import Grid
 
 Dimension = NewType('Dimension', int)
 
@@ -46,10 +47,10 @@ def load_template(map_name: str) -> Sequence[int]:
 
 def make_grid(
     map_name: str, block_dim: Dimension, grid_dim: Dimension
-) -> list[list[Block]]:
+) -> Grid[Block]:
     grid_vals = load_template(map_name)
 
-    def make_row(x: int) -> list[Block]:
+    def make_row(x: int) -> Sequence[Block]:
         return [make_block(x, y) for y in range(grid_dim)]
 
     def make_block(x: int, y: int) -> Block:
