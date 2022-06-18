@@ -19,15 +19,6 @@ class IMonster(GameObject, Movable, Protocol):
     x: int
     y: int
 
-    def __init__(self, distance: float):
-        ...
-
-    def move(self) -> None:
-        ...
-
-    def positionFormula(self, distance: float) -> None:
-        ...
-
     def killed(self) -> None:
         ...
 
