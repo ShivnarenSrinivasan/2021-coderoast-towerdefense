@@ -6,8 +6,10 @@ from typing import (
     runtime_checkable,
 )
 
-from .protocols import Movable
-from .game import GameObject
+from .protocols import (
+    Movable,
+    GameObject,
+)
 
 
 @runtime_checkable
