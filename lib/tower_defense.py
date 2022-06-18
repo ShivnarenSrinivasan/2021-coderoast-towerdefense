@@ -74,7 +74,7 @@ class TowerDefenseGame(Game):
 
     def _load_map(self, map_name: str = 'LeoMap') -> None:
         _map = maps.Map(map_name)
-        maps.make_grid(map_name, blockGrid, blockSize, gridSize)
+        maps.make_grid(map_name, blockGrid, self.block_dim, self.grid_dim)
         self.add_object(_map)
 
     @property
@@ -142,14 +142,14 @@ class Wavegenerator:
         for x in range(gridSize):
             if block.is_path(blockGrid[x][0]):
                 self.gridx = x
-                spawnx = x * blockSize + blockSize / 2
+                spawnx = x * self.game.block_dim + self.game.block_dim / 2
                 spawny = 0
                 return
         for y in range(gridSize):
             if block.is_path(blockGrid[0][y]):
                 self.gridy = y
                 spawnx = 0
-                spawny = y * blockSize + blockSize / 2
+                spawny = y * self.game.block_dim + self.game.block_dim / 2
                 return
 
     def move(self):
@@ -507,8 +507,12 @@ class Mouse:
             self.x = 0
         if self.y < 0:
             self.y = 0
-        self.gridx = int((self.x - (self.x % blockSize)) / blockSize)
-        self.gridy = int((self.y - (self.y % blockSize)) / blockSize)
+        self.gridx = int(
+            (self.x - (self.x % self.game.block_dim)) / self.game.block_dim
+        )
+        self.gridy = int(
+            (self.y - (self.y % self.game.block_dim)) / self.game.block_dim
+        )
 
     def update(self) -> None:
         if self._in_grid():
@@ -549,8 +553,8 @@ class Mouse:
         block_ = blockGrid[self.gridx][self.gridy]
         img = self.image if block.is_empty(block_) else self.canNotPressImage
         canvas.create_image(
-            self.gridx * blockSize,
-            self.gridy * blockSize,
+            self.gridx * self.game.block_dim,
+            self.gridy * self.game.block_dim,
             image=img,
             anchor=tk.NW,
         )
