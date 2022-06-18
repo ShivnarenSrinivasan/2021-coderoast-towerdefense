@@ -59,15 +59,15 @@ class TowerDefenseGame(Game):
         self.block_dim = block_dim
         self.state = GameState.IDLE
         self.displayboard = display.Displayboard(self.frame, health, money)
-        self.infoboard = Infoboard(self)
-        self.towerbox = Towerbox(self)
+        infoboard = Infoboard(self.frame)
+        self.towerbox = Towerbox(self.frame, infoboard)
         self.grid = self._load_grid(map_name)
 
         self.add_objects(
             [
                 maps.Map(map_name),
                 Wavegenerator(self),
-                Mouse(self),
+                Mouse(self, infoboard),
             ]
         )
 
@@ -278,9 +278,9 @@ class UpgradeButton(buttons.Button):
 
 
 class Infoboard:
-    def __init__(self, game: TowerDefenseGame):
+    def __init__(self, frame: tk.Frame):
         self.canvas = tk.Canvas(
-            master=game.frame, width=162, height=174, bg="gray", highlightthickness=0
+            master=frame, width=162, height=174, bg="gray", highlightthickness=0
         )
         self.canvas.grid(row=0, column=1)
         self.image = ImageTk.PhotoImage(Image.open("images/infoBoard.png"))
@@ -391,10 +391,10 @@ class Infoboard:
 
 
 class Towerbox:
-    def __init__(self, game: TowerDefenseGame):
-        self.game = game
+    def __init__(self, frame: tk.Frame, infoboard: Infoboard):
+        self.infoboard = infoboard
         self.box = tk.Listbox(
-            master=game.frame,
+            master=frame,
             selectmode="SINGLE",
             font=("times", 18),
             height=18,
@@ -417,12 +417,13 @@ class Towerbox:
         global displayTower
         selectedTower = str(self.box.get(self.box.curselection()))
         displayTower = None
-        self.game.infoboard.displayGeneric()
+        self.infoboard.displayGeneric()
 
 
 class Mouse:
-    def __init__(self, game: TowerDefenseGame):
+    def __init__(self, game: TowerDefenseGame, infoboard: Infoboard):
         self.game = game
+        self.infoboard = infoboard
         self.x = 0
         self.y = 0
         self.gridx = 0
@@ -450,7 +451,7 @@ class Mouse:
         if event.widget == self.game.canvas:
             self.xoffset = 0
             self.yoffset = 0
-        elif event.widget == self.game.infoboard.canvas:
+        elif event.widget == self.infoboard.canvas:
             self.xoffset = self.game.size
             self.yoffset = 0
         elif event.widget == self.game.towerbox.box:
@@ -491,7 +492,7 @@ class Mouse:
         if block_.grid_loc in tower_map:
             if not is_tower_selected():
                 select_tower(block_.grid_loc)
-                self.game.infoboard.displaySpecific()
+                self.infoboard.displaySpecific()
         else:
             if is_tower_selected() and can_add_tower(block_, selectedTower):
                 add_tower(block_, selectedTower)
@@ -508,7 +509,7 @@ class Mouse:
         ):
             self.game.set_state(GameState.WAIT_FOR_SPAWN)
         if self.pressed:
-            self.game.infoboard.buttonsCheck(pos)
+            self.infoboard.buttonsCheck(pos)
 
     def paint(self, canvas: tk.Canvas) -> None:
         if not self._in_grid():
