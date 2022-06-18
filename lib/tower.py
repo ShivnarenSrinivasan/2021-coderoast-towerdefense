@@ -31,7 +31,7 @@ class Tower(ABC):
     def nextLevel(self) -> None:
         ...
 
-    def upgrade(self):
+    def upgrade(self) -> None:
         self.level = self.level + 1
         self.image = load_img(self)
         self.nextLevel()
@@ -67,7 +67,7 @@ def load_img(tower: Tower | str) -> ImageTk.PhotoImage:
 
 
 class ShootingTower(Tower):
-    def __init__(self, x, y, gridx, gridy):
+    def __init__(self, x: float, y: float, gridx: int, gridy: int):
         super(ShootingTower, self).__init__(x, y, gridx, gridy)
         self.bulletsPerSecond = None
         self.ticks = 0

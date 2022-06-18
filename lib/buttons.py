@@ -1,3 +1,4 @@
+import tkinter as tk
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Protocol
@@ -26,7 +27,7 @@ class Button(ABC):
     def press(self) -> None:
         """Implement press functionality."""
 
-    def paint(self, canvas):
+    def paint(self, canvas: tk.Canvas) -> None:
         canvas.create_rectangle(*self.coord1, *self.coord2, fill="red", outline="black")
 
 

@@ -3,10 +3,10 @@ from typing import Optional, Protocol
 
 
 class GameObject(Protocol):
-    def update(self):
+    def update(self) -> None:
         """Updates the game."""
 
-    def paint(self, canvas: tk.Canvas):
+    def paint(self, canvas: tk.Canvas) -> None:
         """Paints the game."""
 
 
@@ -36,36 +36,36 @@ class Game:
 
         self.objects: list[GameObject] = []
 
-    def add_object(self, obj: GameObject):
+    def add_object(self, obj: GameObject) -> None:
         self.objects.append(obj)
 
-    def remove_object(self, obj: GameObject):
+    def remove_object(self, obj: GameObject) -> None:
         self.objects.remove(obj)
 
-    def run(self):
+    def run(self) -> None:
         self.running = True
         self._run()
         self.root.mainloop()
 
-    def _run(self):
+    def _run(self) -> None:
         self.update()
         self.paint()
 
         if self.running:
             self.timer_id = self.root.after(self.timestep, self._run)
 
-    def end(self):
+    def end(self) -> None:
         self.running = False
         if self.timer_id is not None:
             self.root.after_cancel(self.timer_id)
         self.root.destroy()
 
-    def update(self):
+    def update(self) -> None:
         """Updates the game."""
         for obj in self.objects:
             obj.update()
 
-    def paint(self):
+    def paint(self) -> None:
         """Paints the game."""
         self.canvas.delete(tk.ALL)  # clear the screen
         for obj in self.objects:

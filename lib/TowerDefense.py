@@ -66,7 +66,7 @@ class TowerDefenseGame(Game):
         super().__init__(title, width, height)
         self.state = TowerDefenseGameState.IDLE
 
-    def initialize(self):
+    def initialize(self) -> None:
         self.displayboard = Displayboard(self)
 
         self.infoboard = Infoboard(self)
@@ -85,7 +85,7 @@ class TowerDefenseGame(Game):
     def is_idle(self) -> bool:
         return self.state is TowerDefenseGameState.IDLE
 
-    def update(self):
+    def update(self) -> None:
         super().update()
         self.displayboard.update()
         for p in projectiles:
@@ -97,7 +97,7 @@ class TowerDefenseGame(Game):
         for _tower in tower_map.values():
             _tower.update()
 
-    def paint(self):
+    def paint(self) -> None:
         super().paint()
 
         for _tower in tower_map.values():
@@ -113,7 +113,7 @@ class TowerDefenseGame(Game):
             displayTower.paintSelect(self.canvas)
         self.displayboard.paint()
 
-    def set_state(self, state: TowerDefenseGameState):
+    def set_state(self, state: TowerDefenseGameState) -> None:
         self.state = state
 
 
@@ -124,7 +124,7 @@ def create_map(map_name: str, map_size: int) -> None:
     map_canvas.save(maps.img_path(map_name))
 
 
-def make_grid(map_name: str):
+def make_grid(map_name: str) -> None:
     grid_vals = maps.load_template(map_name)
     blockGrid.clear()
 
