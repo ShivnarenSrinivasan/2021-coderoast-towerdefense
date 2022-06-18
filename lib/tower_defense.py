@@ -289,10 +289,7 @@ class Infoboard:
         self.towerImage: ImageTk.PhotoImage
         self.text: str | None
 
-    def buttonsCheck(self, click: bool, point: grid.Point) -> None:
-        if not click:
-            return None
-
+    def buttonsCheck(self, point: grid.Point) -> None:
         for btn in self.currentButtons:
             if btn.can_press(point):
                 btn.press()
@@ -476,7 +473,7 @@ class Mouse:
         )
 
     def update(self) -> None:
-        if self._in_grid():
+        if self._in_grid() and self.pressed:
             self._in_update()
         else:
             self._out_update()
@@ -490,9 +487,6 @@ class Mouse:
         )
 
     def _in_update(self) -> None:
-        if not self.pressed:
-            return None
-
         block_ = self.game.grid[self.gridx][self.gridy]
         if block_.grid_loc in tower_map:
             if not is_tower_selected():
@@ -513,7 +507,8 @@ class Mouse:
             ]
         ):
             self.game.set_state(GameState.WAIT_FOR_SPAWN)
-        self.game.infoboard.buttonsCheck(self.pressed, pos)
+        if self.pressed:
+            self.game.infoboard.buttonsCheck(pos)
 
     def paint(self, canvas: tk.Canvas) -> None:
         if not self._in_grid():
