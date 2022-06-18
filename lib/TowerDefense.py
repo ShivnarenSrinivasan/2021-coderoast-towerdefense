@@ -25,8 +25,6 @@ mapSize = gridSize * blockSize
 
 blockGrid: list[list[Block]] = []
 
-blockDictionary = ["NormalBlock", "PathBlock", "WaterBlock"]
-
 tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
 spawnx = 0
