@@ -11,8 +11,11 @@ from . import (
     display,
     grid,
     maps,
+    monster,
     tower,
 )
+from .monster import BaseMonster
+
 from .game import Game
 
 gridSize = 30  # the height and width of the array of blocks
@@ -27,24 +30,7 @@ tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
 spawnx = 0
 spawny = 0
-monsters: list[Monster] = []
-
-
-def gen_monsters_list(monsters: list[Monster]) -> list[list[Monster]]:
-
-    monstersByHealth = sorted(monsters, key=lambda x: x.health, reverse=True)
-    monstersByHealthReversed = sorted(monsters, key=lambda x: x.health, reverse=False)
-    return [
-        monstersByHealth,
-        monstersByHealthReversed,
-        _sort_distance(monsters),
-        _sort_distance(monsters, reverse=True),
-    ]
-
-
-def _sort_distance(monsters: list[Monster], reverse: bool = False) -> list[Monster]:
-    return sorted(monsters, key=lambda x: x.distanceTravelled, reverse=reverse)
-
+monsters: list[BaseMonster] = []
 
 projectiles: list[Projectile] = []
 health = 100
@@ -103,8 +89,8 @@ class TowerDefenseGame(Game):
         for _tower in tower_map.values():
             _tower.paint(self.canvas)
 
-        for monster in _sort_distance(monsters):
-            monster.paint(self.canvas)
+        for _monster in monster.sort_distance(monsters):
+            _monster.paint(self.canvas)
 
         for projectile in projectiles:
             projectile.paint(self.canvas)
@@ -705,17 +691,17 @@ class TargetingTower(tower.ShootingTower):
         self.stickyTarget = False
 
     def prepareShot(self):
-        monster_list = gen_monsters_list(monsters)[self.targetList]
+        monster_list = monster.gen_list(monsters)[self.targetList]
 
         if self.ticks != 20 / self.bulletsPerSecond:
             self.ticks += 1
 
         if not self.stickyTarget:
-            for monster in monster_list:
-                if (self.range + blockSize / 2) ** 2 >= (self.x - monster.x) ** 2 + (
-                    self.y - monster.y
+            for m in monster_list:
+                if (self.range + blockSize / 2) ** 2 >= (self.x - m.x) ** 2 + (
+                    self.y - m.y
                 ) ** 2:
-                    self.target = monster
+                    self.target = m
 
         if self.target:
             if (
@@ -730,11 +716,11 @@ class TargetingTower(tower.ShootingTower):
             else:
                 self.target = None
         elif self.stickyTarget:
-            for monster in monster_list:
-                if (self.range + blockSize / 2) ** 2 >= (self.x - monster.x) ** 2 + (
-                    self.y - monster.y
+            for m in monster_list:
+                if (self.range + blockSize / 2) ** 2 >= (self.x - m.x) ** 2 + (
+                    self.y - m.y
                 ) ** 2:
-                    self.target = monster
+                    self.target = m
 
 
 class ArrowShooterTower(TargetingTower):
@@ -869,7 +855,7 @@ def add_tower(block: block.Block, _tower: str) -> None:
     money -= tower.cost(_tower)
 
 
-class Monster(object):
+class Monster(BaseMonster):
     def __init__(self, distance):
         self.alive = True
         self.image = None
