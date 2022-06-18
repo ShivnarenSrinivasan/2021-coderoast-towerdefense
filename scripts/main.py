@@ -19,7 +19,6 @@ from lib import tower_defense
 
 def main() -> None:
     game = tower_defense.TowerDefenseGame()
-    game.initialize()
     game.run()
 
 

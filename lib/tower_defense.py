@@ -58,21 +58,16 @@ class TowerDefenseGame(Game):
         self.grid_dim = grid_dim
         self.block_dim = block_dim
         self.state = TowerDefenseGameState.IDLE
-        self.grid: list[list[Block]]
-
-    @cached_property
-    def size(self) -> Dimension:
-        return maps.size(self.grid_dim, self.block_dim)
-
-    def initialize(self) -> None:
         self.displayboard = Displayboard(self)
-
         self.infoboard = Infoboard(self)
-
         self.towerbox = Towerbox(self)
         self.grid = self._load_map()
         self.add_object(Mouse(self))
         self.add_object(Wavegenerator(self))
+
+    @cached_property
+    def size(self) -> Dimension:
+        return maps.size(self.grid_dim, self.block_dim)
 
     def _load_map(self, map_name: str = 'LeoMap') -> list[list[Block]]:
         _map = maps.Map(map_name)
