@@ -4,10 +4,15 @@ from collections.abc import (
     Sequence,
 )
 
+from PIL import Image
+
 from . import (
     constants as C,
+    block,
     io,
+    grid,
 )
+from .block import Block
 
 
 class Map:
@@ -30,3 +35,53 @@ def load_template(map_name: str) -> Sequence[int]:
     fp = Path(f'map/{map_name}.txt')
     grid_vals = tuple(map(int, io.load_map_text(fp).split()))
     return grid_vals
+
+
+def make_grid(
+    map_name: str, blockGrid: list[list[Block]], blockSize: int, gridSize: int
+) -> None:
+    grid_vals = load_template(map_name)
+    blockGrid.clear()
+
+    def make_row(x: int) -> list[Block]:
+        return [make_block(x, y) for y in range(gridSize)]
+
+    def make_block(x: int, y: int) -> Block:
+        block_num = grid_vals[gridSize * y + x]
+        return block.factory(
+            x * blockSize + blockSize / 2,
+            y * blockSize + blockSize / 2,
+            block_num,
+            x,
+            y,
+        )
+
+    for x in range(gridSize):
+        blockGrid.append(make_row(x))
+
+
+def create_map(
+    map_name: str,
+    map_size: int,
+    blockGrid: list[list[Block]],
+    blockSize: int,
+    gridSize: int,
+) -> None:
+    map_canvas = Image.new("RGBA", (map_size, map_size), (255, 255, 255, 255))
+    make_grid(map_name, blockGrid, blockSize, gridSize)
+    paint_map_canvas(blockGrid, blockSize, map_canvas)
+    map_canvas.save(img_path(map_name))
+
+
+def paint_map_canvas(
+    block_grid: list[list[Block]], block_size: int, map_canvas: Image.Image
+) -> None:
+    axis = block_size / 2
+    for block_ in grid.grid_iter(block_grid):
+        paint(block_, map_canvas, axis)
+
+
+def paint(block_: block.Block, img_canvas: Image.Image, axis: float) -> None:
+    image = block.load_img(block_)
+    offset = (int(block_.loc.x - axis), int(block_.loc.y - axis))
+    img_canvas.paste(image, offset)

@@ -32,7 +32,8 @@ def factory(x: float, y: float, block_num: int, gridx: int, gridy: int) -> Block
 
 
 def load_img(block: Block) -> Image.Image:
-    img_fp = Path(f'block/{block.__class__.__name__}.png')
+    filename = f'{block.type.name}Block'
+    img_fp = Path(f'block/{filename}.png')
     return io.load_img(img_fp)
 
 

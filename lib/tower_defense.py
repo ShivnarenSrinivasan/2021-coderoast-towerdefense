@@ -63,7 +63,7 @@ class TowerDefenseGame(Game):
 
     def _load_map(self, map_name: str = 'LeoMap') -> None:
         _map = maps.Map(map_name)
-        make_grid(map_name)
+        maps.make_grid(map_name, blockGrid, blockSize, gridSize)
         self.add_object(_map)
 
     @property
@@ -100,39 +100,6 @@ class TowerDefenseGame(Game):
 
     def set_state(self, state: TowerDefenseGameState) -> None:
         self.state = state
-
-
-def create_map(map_name: str, map_size: int) -> None:
-    map_canvas = Image.new("RGBA", (map_size, map_size), (255, 255, 255, 255))
-    make_grid(map_name)
-    paint_map_canvas(blockGrid, map_canvas)
-    map_canvas.save(maps.img_path(map_name))
-
-
-def make_grid(map_name: str) -> None:
-    grid_vals = maps.load_template(map_name)
-    blockGrid.clear()
-
-    def make_row(x: int) -> list[Block]:
-        return [make_block(x, y) for y in range(gridSize)]
-
-    def make_block(x: int, y: int) -> Block:
-        block_num = grid_vals[gridSize * y + x]
-        return block.factory(
-            x * blockSize + blockSize / 2,
-            y * blockSize + blockSize / 2,
-            block_num,
-            x,
-            y,
-        )
-
-    for x in range(gridSize):
-        blockGrid.append(make_row(x))
-
-
-def paint_map_canvas(block_grid: list[list[Block]], map_canvas: Image.Image) -> None:
-    for block_ in grid.grid_iter(block_grid):
-        paint(block_, map_canvas)
 
 
 class Wavegenerator:
@@ -1050,9 +1017,3 @@ def monster_factory(idx: int) -> Monster:
     )
     monster_ = monsters_[idx](0.0)
     return monster_
-
-
-def paint(block_: Block, img_canvas: Image.Image, axis: float = blockSize / 2) -> None:
-    image = block.load_img(block_)
-    offset = (int(block_.loc.x - axis), int(block_.loc.y - axis))
-    img_canvas.paste(image, offset)
