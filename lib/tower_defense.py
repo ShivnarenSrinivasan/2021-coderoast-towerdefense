@@ -21,7 +21,6 @@ from .monster import IMonster
 
 from .game import Game
 
-gridSize = Dimension(30)  # the height and width of the array of blocks
 blockSize = Dimension(20)  # pixels wide of each block
 
 blockGrid: list[list[Block]] = []
@@ -49,9 +48,13 @@ class TowerDefenseGame(Game):
     def __init__(
         self,
         title: str = "Tower Defense",
-        grid_dim: Dimension = gridSize,
+        grid_dim: Dimension = Dimension(30),
         block_dim: Dimension = blockSize,
     ):
+        """Create Tower Defense game.
+
+        grid_dim: the height and width of the array of blocks
+        """
         size = maps.size(grid_dim, block_dim)
         super().__init__(title, size, size)
         self.grid_dim = grid_dim
@@ -139,13 +142,13 @@ class Wavegenerator:
     def findSpawn(self):
         global spawnx
         global spawny
-        for x in range(gridSize):
+        for x in range(self.game.grid_dim):
             if block.is_path(blockGrid[x][0]):
                 self.gridx = x
                 spawnx = x * self.game.block_dim + self.game.block_dim / 2
                 spawny = 0
                 return
-        for y in range(gridSize):
+        for y in range(self.game.grid_dim):
             if block.is_path(blockGrid[0][y]):
                 self.gridy = y
                 spawnx = 0
@@ -167,9 +170,9 @@ class Wavegenerator:
     def decideMove(self):
         if (
             self.direction != 2
-            and self.gridx < gridSize - 1
+            and self.gridx < self.game.grid_dim - 1
             and self.gridy >= 0
-            and self.gridy <= gridSize - 1
+            and self.gridy <= self.game.grid_dim - 1
         ):
             if block.is_path(blockGrid[self.gridx + 1][self.gridy]):
                 self.direction = 1
@@ -180,7 +183,7 @@ class Wavegenerator:
             self.direction != 1
             and self.gridx > 0
             and self.gridy >= 0
-            and self.gridy <= gridSize - 1
+            and self.gridy <= self.game.grid_dim - 1
         ):
             if block.is_path(blockGrid[self.gridx - 1][self.gridy]):
                 self.direction = 2
@@ -189,9 +192,9 @@ class Wavegenerator:
 
         if (
             self.direction != 4
-            and self.gridy < gridSize - 1
+            and self.gridy < self.game.grid_dim - 1
             and self.gridx >= 0
-            and self.gridx <= gridSize - 1
+            and self.gridx <= self.game.grid_dim - 1
         ):
             if block.is_path(blockGrid[self.gridx][self.gridy + 1]):
                 self.direction = 3
@@ -202,7 +205,7 @@ class Wavegenerator:
             self.direction != 3
             and self.gridy > 0
             and self.gridx >= 0
-            and self.gridx <= gridSize - 1
+            and self.gridx <= self.game.grid_dim - 1
         ):
             if block.is_path(blockGrid[self.gridx][self.gridy - 1]):
                 self.direction = 4
@@ -523,9 +526,9 @@ class Mouse:
     def _in_grid(self) -> bool:
         return (
             self.gridx >= 0
-            and self.gridx <= gridSize - 1
+            and self.gridx <= self.game.grid_dim - 1
             and self.gridy >= 0
-            and self.gridy <= gridSize - 1
+            and self.gridy <= self.game.grid_dim - 1
         )
 
     def _in_update(self) -> None:
