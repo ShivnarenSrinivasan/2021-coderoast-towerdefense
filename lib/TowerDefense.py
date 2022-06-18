@@ -164,13 +164,13 @@ class Wavegenerator:
         global spawnx
         global spawny
         for x in range(gridSize):
-            if isinstance(blockGrid[x][0], block.PathBlock):
+            if block.is_path(blockGrid[x][0]):
                 self.gridx = x
                 spawnx = x * blockSize + blockSize / 2
                 spawny = 0
                 return
         for y in range(gridSize):
-            if isinstance(blockGrid[0][y], block.PathBlock):
+            if block.is_path(blockGrid[0][y]):
                 self.gridy = y
                 spawnx = 0
                 spawny = y * blockSize + blockSize / 2
@@ -195,7 +195,7 @@ class Wavegenerator:
             and self.gridy >= 0
             and self.gridy <= gridSize - 1
         ):
-            if isinstance(blockGrid[self.gridx + 1][self.gridy], block.PathBlock):
+            if block.is_path(blockGrid[self.gridx + 1][self.gridy]):
                 self.direction = 1
                 self.move()
                 return
@@ -206,7 +206,7 @@ class Wavegenerator:
             and self.gridy >= 0
             and self.gridy <= gridSize - 1
         ):
-            if isinstance(blockGrid[self.gridx - 1][self.gridy], block.PathBlock):
+            if block.is_path(blockGrid[self.gridx - 1][self.gridy]):
                 self.direction = 2
                 self.move()
                 return
@@ -217,7 +217,7 @@ class Wavegenerator:
             and self.gridx >= 0
             and self.gridx <= gridSize - 1
         ):
-            if isinstance(blockGrid[self.gridx][self.gridy + 1], block.PathBlock):
+            if block.is_path(blockGrid[self.gridx][self.gridy + 1]):
                 self.direction = 3
                 self.move()
                 return
@@ -228,7 +228,7 @@ class Wavegenerator:
             and self.gridx >= 0
             and self.gridx <= gridSize - 1
         ):
-            if isinstance(blockGrid[self.gridx][self.gridy - 1], block.PathBlock):
+            if block.is_path(blockGrid[self.gridx][self.gridy - 1]):
                 self.direction = 4
                 self.move()
                 return
@@ -571,7 +571,7 @@ class Mouse:
             return None
 
         block_ = blockGrid[self.gridx][self.gridy]
-        img = self.image if block_.can_place else self.canNotPressImage
+        img = self.image if block.is_empty(block_) else self.canNotPressImage
         canvas.create_image(
             self.gridx * blockSize,
             self.gridy * blockSize,
@@ -841,7 +841,7 @@ def is_tower_selected() -> bool:
 
 
 def can_add_tower(block_: Block, tower_: str) -> bool:
-    return all([block_.can_place, can_buy_tower(money, tower_)])
+    return all([block.is_empty(block_), can_buy_tower(money, tower_)])
 
 
 def can_buy_tower(money_: int, tower_: str) -> bool:
