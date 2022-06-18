@@ -68,7 +68,6 @@ def make_grid(
 
 def create_map(
     map_name: str,
-    block_grid: list[list[Block]],
     block_dim: Dimension,
     grid_dim: Dimension,
 ) -> None:
@@ -80,7 +79,7 @@ def create_map(
 
 
 def paint_map_canvas(
-    block_grid: list[list[Block]], block_size: int, map_canvas: Image.Image
+    block_grid: Grid[Block], block_size: int, map_canvas: Image.Image
 ) -> None:
     axis = block_size / 2
     images = block.load_imgs()
@@ -90,7 +89,7 @@ def paint_map_canvas(
 
 
 def paint(
-    block_: block.Block, img: Image.Image, img_canvas: Image.Image, axis: float
+    block_: Block, img: Image.Image, img_canvas: Image.Image, axis: float
 ) -> None:
     offset = (int(block_.loc.x - axis), int(block_.loc.y - axis))
     img_canvas.paste(img, offset)
