@@ -383,10 +383,10 @@ class Infoboard:
             self.towerImage = None
         else:
             self.text = selectedTower + " cost: " + str(tower.cost(selectedTower))
+            self.canvas.create_text(80, 75, text=self.text)
             self.towerImage = tower.load_img(selectedTower)
         self.canvas.delete(tk.ALL)  # clear the screen
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
-        self.canvas.create_text(80, 75, text=self.text)
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
 
