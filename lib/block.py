@@ -13,7 +13,6 @@ class BlockType(Enum):
 @dataclass
 class Block:
     loc: grid.Loc
-    block_num: int
     grid_loc: grid.Point
     type: BlockType
 
@@ -21,7 +20,6 @@ class Block:
 def factory(x: float, y: float, block_num: int, gridx: int, gridy: int) -> Block:
     return Block(
         grid.Loc(x, y),
-        block_num,
         grid.Point(gridx, gridy),
         tuple(BlockType)[block_num],
     )
