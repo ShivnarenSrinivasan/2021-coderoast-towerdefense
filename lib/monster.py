@@ -14,7 +14,7 @@ class BaseMonster(ABC, Movable):
     health: int
     x: int
     y: int
-    distanceTravelled: int
+    distanceTravelled: float
 
     @abstractmethod
     def __init__(self, distance: int):
@@ -29,7 +29,7 @@ class BaseMonster(ABC, Movable):
         ...
 
     @abstractmethod
-    def positionFormula(self, distance: int) -> None:
+    def positionFormula(self, distance: float) -> None:
         ...
 
     @abstractmethod

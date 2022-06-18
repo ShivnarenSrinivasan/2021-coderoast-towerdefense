@@ -856,7 +856,7 @@ def add_tower(block: block.Block, _tower: str) -> None:
 
 
 class Monster(BaseMonster):
-    def __init__(self, distance):
+    def __init__(self, distance: float):
         self.alive = True
         self.image = None
         self.health = 0
@@ -1054,7 +1054,7 @@ def monster_factory(idx: int) -> Monster:
         LeoMonster,
         MonsterBig,
     )
-    monster = monsters[idx](0)
+    monster = monsters[idx](0.0)
     return monster
 
 
