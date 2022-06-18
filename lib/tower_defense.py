@@ -1,4 +1,5 @@
 from __future__ import annotations
+from abc import ABC, abstractmethod
 import math
 import random
 from collections.abc import Sequence
@@ -274,7 +275,8 @@ class TargetButton(buttons.Button):
 
 class StickyButton(buttons.Button):
     def press(self):
-        if displayTower.stickyTarget == False:
+        assert displayTower is not None
+        if not displayTower.stickyTarget:
             displayTower.stickyTarget = True
         else:
             displayTower.stickyTarget = False
@@ -292,6 +294,7 @@ class SellButton(buttons.Button):
 class UpgradeButton(buttons.Button):
     def press(self):
         global money
+        assert displayTower is not None
         if money >= displayTower.upgradeCost:
             money -= displayTower.upgradeCost
             displayTower.upgrade()
@@ -394,7 +397,7 @@ class Infoboard:
             )
 
             self.currentButtons[displayTower.targetList].paint(self.canvas)
-            if displayTower.stickyTarget == True:
+            if displayTower.stickyTarget:
                 self.currentButtons[4].paint(self.canvas)
 
     def displayGeneric(self):
@@ -565,7 +568,7 @@ class Mouse:
         )
 
 
-class Projectile:
+class Projectile(ABC):
     def __init__(self, x, y, damage, speed):
         self.hit = False
         self.x = x
@@ -573,6 +576,8 @@ class Projectile:
         self.speed = blockSize / 2
         self.damage = damage
         self.speed = speed
+        self.target: Monster
+        self.image: ImageTk.PhotoImage
 
     def update(self):
         if self.target and not self.target.alive:
@@ -589,6 +594,14 @@ class Projectile:
 
     def paint(self, canvas: tk.Canvas):
         canvas.create_image(self.x, self.y, image=self.image)
+
+    @abstractmethod
+    def move(self) -> None:
+        ...
+
+    @abstractmethod
+    def checkHit(self) -> None:
+        ...
 
 
 class TrackingBullet(Projectile):
@@ -728,6 +741,7 @@ class ArrowShooterTower(TargetingTower):
             self.bulletsPerSecond = 2
 
     def shoot(self):
+        assert self.target is not None
         self.angle = math.atan2(self.y - self.target.y, self.target.x - self.x)
         projectiles.append(
             AngledProjectile(
@@ -857,6 +871,7 @@ class Monster:
         self.magicresist = 0
         self.value = 0
         self.image = monster.load_img(self)
+        self.axis: int | float
 
     def update(self):
         if self.health <= 0:
@@ -977,7 +992,7 @@ class AlexMonster(Monster):
     def killed(self):
         global money
         money += self.value
-        for i in range(5):
+        for _ in range(5):
             monsters.append(
                 Monster2(self.distanceTravelled + blockSize * (0.5 - random.random()))
             )
@@ -997,7 +1012,7 @@ class BenMonster(Monster):
     def killed(self):
         global money
         money += self.value
-        for i in range(2):
+        for _ in range(2):
             monsters.append(
                 LeoMonster(self.distanceTravelled + blockSize * (0.5 - random.random()))
             )
