@@ -77,11 +77,14 @@ def paint_map_canvas(
     block_grid: list[list[Block]], block_size: int, map_canvas: Image.Image
 ) -> None:
     axis = block_size / 2
+    images = block.load_imgs()
+
     for block_ in grid.grid_iter(block_grid):
-        paint(block_, map_canvas, axis)
+        paint(block_, images[block_.type], map_canvas, axis)
 
 
-def paint(block_: block.Block, img_canvas: Image.Image, axis: float) -> None:
-    image = block.load_img(block_)
+def paint(
+    block_: block.Block, img: Image.Image, img_canvas: Image.Image, axis: float
+) -> None:
     offset = (int(block_.loc.x - axis), int(block_.loc.y - axis))
-    img_canvas.paste(image, offset)
+    img_canvas.paste(img, offset)
