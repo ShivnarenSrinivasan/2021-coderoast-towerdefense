@@ -31,6 +31,18 @@ class Button(ABC):
         canvas.create_rectangle(*self.coord1, *self.coord2, fill="red", outline="black")
 
 
+class NextWaveButton:
+    def __init__(self):
+        self.coord1 = grid.Point(450, 25)
+        self.coord2 = grid.Point(550, 50)
+
+    def paint(self, canvas: tk.Canvas, color: str) -> None:
+        canvas.create_rectangle(
+            *self.coord1, *self.coord2, fill=color, outline=color
+        )  # draws a rectangle where the pointer is
+        canvas.create_text(500, 37, text="Next Wave")
+
+
 def is_within_bounds(btn: BaseButton, point: grid.Point) -> bool:
     return (
         btn.coord1.x <= point.x <= btn.coord2.x

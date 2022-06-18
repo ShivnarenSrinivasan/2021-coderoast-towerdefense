@@ -1,7 +1,14 @@
 import tkinter as tk
 from collections.abc import Iterable
+from enum import Enum, auto
 from typing import Optional
 from .protocols import GameObject
+
+
+class TowerDefenseGameState(Enum):
+    IDLE = auto()
+    WAIT_FOR_SPAWN = auto()
+    SPAWNING = auto()
 
 
 class Game:

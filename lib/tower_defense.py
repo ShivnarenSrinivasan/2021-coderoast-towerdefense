@@ -3,10 +3,10 @@ from abc import ABC, abstractmethod
 import math
 import random
 from collections.abc import Sequence
-from enum import Enum, auto
 from functools import cached_property
 import tkinter as tk
 from PIL import Image, ImageTk
+
 
 from . import (
     buttons,
@@ -24,7 +24,7 @@ from .grid import Grid
 from .maps import Dimension
 from .monster import IMonster
 
-from .game import Game
+from .game import Game, TowerDefenseGameState
 
 blockSize = Dimension(20)  # pixels wide of each block
 
@@ -39,12 +39,6 @@ health = 100
 money = 5000000000
 selectedTower = "<None>"
 displayTower = None
-
-
-class TowerDefenseGameState(Enum):
-    IDLE = auto()
-    WAIT_FOR_SPAWN = auto()
-    SPAWNING = auto()
 
 
 class TowerDefenseGame(Game):
@@ -64,7 +58,7 @@ class TowerDefenseGame(Game):
         self.grid_dim = grid_dim
         self.block_dim = block_dim
         self.state = TowerDefenseGameState.IDLE
-        self.displayboard = Displayboard(self)
+        self.displayboard = display.Displayboard(self.frame, health, money)
         self.infoboard = Infoboard(self)
         self.towerbox = Towerbox(self)
         self.grid = self._load_grid(map_name)
@@ -90,7 +84,7 @@ class TowerDefenseGame(Game):
 
     def update(self) -> None:
         super().update()
-        self.displayboard.update()
+        self.displayboard.update(health, money)
         for p in projectiles:
             p.update()
 
@@ -114,7 +108,9 @@ class TowerDefenseGame(Game):
 
         if displayTower:
             displayTower.paintSelect(self.canvas)
-        self.displayboard.paint()
+        self.displayboard.paint(
+            'blue' if self.is_idle and len(monsters) == 0 else 'red'
+        )
 
     def set_state(self, state: TowerDefenseGameState) -> None:
         self.state = state
@@ -240,29 +236,8 @@ class Wavegenerator:
         pass
 
 
-class NextWaveButton:
-    def __init__(self, game: TowerDefenseGame):
-        self.game = game
-        self.coord1 = grid.Point(450, 25)
-        self.coord2 = grid.Point(550, 50)
-
-    @property
-    def can_spawn(self) -> bool:
-        return self.game.is_idle and len(monsters) == 0
-
-    def checkPress(self, click: bool, point: grid.Point):
-        if not buttons.is_within_bounds(self, point):
-            return
-        if not click or not self.can_spawn:
-            return
-        self.game.set_state(TowerDefenseGameState.WAIT_FOR_SPAWN)
-
-    def paint(self, canvas: tk.Canvas) -> None:
-        color = 'blue' if self.game.is_idle and len(monsters) == 0 else 'red'
-        canvas.create_rectangle(
-            *self.coord1, *self.coord2, fill=color, outline=color
-        )  # draws a rectangle where the pointer is
-        canvas.create_text(500, 37, text="Next Wave")
+def can_spawn(game: TowerDefenseGame, monsters_: Sequence[IMonster]) -> bool:
+    return game.is_idle and len(monsters_) == 0
 
 
 class TargetButton(buttons.Button):
@@ -418,28 +393,6 @@ class Infoboard:
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
 
-class Displayboard:
-    def __init__(self, game: TowerDefenseGame):
-        self.canvas = tk.Canvas(
-            master=game.frame, width=600, height=80, bg="gray", highlightthickness=0
-        )
-        self.canvas.grid(row=2, column=0)
-        self.healthbar = display.Healthbar(health)
-        self.moneybar = display.Moneybar(money)
-        self.nextWaveButton = NextWaveButton(game)
-        self.paint()
-
-    def update(self):
-        self.healthbar.update(health)
-        self.moneybar.update(money)
-
-    def paint(self):
-        self.canvas.delete(tk.ALL)  # clear the screen
-        self.healthbar.paint(self.canvas)
-        self.moneybar.paint(self.canvas)
-        self.nextWaveButton.paint(self.canvas)
-
-
 class Towerbox:
     def __init__(self, game: TowerDefenseGame):
         self.game = game
@@ -551,7 +504,15 @@ class Mouse:
 
     def _out_update(self) -> None:
         pos = grid.Point(self.x - self.xoffset, self.y - self.yoffset)
-        self.game.displayboard.nextWaveButton.checkPress(self.pressed, pos)
+        btn = self.game.displayboard.nextWaveButton
+        if all(
+            [
+                self.pressed,
+                buttons.is_within_bounds(btn, pos),
+                can_spawn(self.game, monsters),
+            ]
+        ):
+            self.game.set_state(TowerDefenseGameState.WAIT_FOR_SPAWN)
         self.game.infoboard.buttonsCheck(self.pressed, pos)
 
     def paint(self, canvas: tk.Canvas) -> None:
@@ -579,7 +540,7 @@ class Projectile(ABC):
         self.target: Monster
         self.image: ImageTk.PhotoImage
 
-    def update(self):
+    def update(self) -> None:
         if self.target and not self.target.alive:
             projectiles.remove(self)
             return
@@ -592,7 +553,7 @@ class Projectile(ABC):
         self.target.health -= self.damage
         projectiles.remove(self)
 
-    def paint(self, canvas: tk.Canvas):
+    def paint(self, canvas: tk.Canvas) -> None:
         canvas.create_image(self.x, self.y, image=self.image)
 
     @abstractmethod

@@ -1,5 +1,28 @@
 import tkinter as tk
 
+from . import buttons
+
+
+class Displayboard:
+    def __init__(self, frame: tk.Frame, health: int, money: int):
+        self.canvas = tk.Canvas(
+            master=frame, width=600, height=80, bg="gray", highlightthickness=0
+        )
+        self.canvas.grid(row=2, column=0)
+        self.healthbar = Healthbar(health)
+        self.moneybar = Moneybar(money)
+        self.nextWaveButton = buttons.NextWaveButton()
+
+    def update(self, health: int, money: int) -> None:
+        self.healthbar.update(health)
+        self.moneybar.update(money)
+
+    def paint(self, color: str) -> None:
+        self.canvas.delete(tk.ALL)  # clear the screen
+        self.healthbar.paint(self.canvas)
+        self.moneybar.paint(self.canvas)
+        self.nextWaveButton.paint(self.canvas, color)
+
 
 class Healthbar:
     def __init__(self, health: int):
