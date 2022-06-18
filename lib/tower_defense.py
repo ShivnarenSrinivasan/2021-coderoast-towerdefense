@@ -15,6 +15,8 @@ from . import (
     grid,
     maps,
     monster,
+    mouse,
+    projectile,
     tower,
 )
 from .block import Block
@@ -107,8 +109,8 @@ class TowerDefenseGame(Game):
         for monster_ in monster.sort_distance(monsters):
             monster_.paint(self.canvas)
 
-        for projectile in projectiles:
-            projectile.paint(self.canvas)
+        for projectile_ in projectiles:
+            projectile_.paint(self.canvas)
 
         if displayTower:
             displayTower.paintSelect(self.canvas)
@@ -294,7 +296,7 @@ class SellButton(buttons.Button):
 class UpgradeButton(buttons.Button):
     def press(self):
         global money
-        assert displayTower is not None
+        assert displayTower is not None and displayTower.upgradeCost is not None
         if money >= displayTower.upgradeCost:
             money -= displayTower.upgradeCost
             displayTower.upgrade()
@@ -309,6 +311,8 @@ class Infoboard:
         self.image = ImageTk.PhotoImage(Image.open("images/infoBoard.png"))
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.currentButtons: list[buttons.Button] = []
+        self.towerImage: ImageTk.PhotoImage
+        self.text: str | None
 
     def buttonsCheck(self, click: bool, point: grid.Point) -> None:
         if not click:
@@ -324,7 +328,7 @@ class Infoboard:
         self.canvas.delete(tk.ALL)  # clear the screen
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.currentButtons = []
-        if displayTower == None:
+        if displayTower is None:
             return
 
         self.towerImage = tower.load_img(displayTower)
@@ -453,12 +457,12 @@ class Towerbox:
         self.box.insert(tk.END, "<None>")
         for i in tower.towers:
             self.box.insert(tk.END, i)
-        for i in range(50):
+        for _ in range(50):
             self.box.insert(tk.END, "<None>")
         self.box.grid(row=1, column=1, rowspan=2)
         self.box.bind("<<ListboxSelect>>", self.onselect)
 
-    def onselect(self, event):
+    def onselect(self, _):
         global selectedTower
         global displayTower
         selectedTower = str(self.box.get(self.box.curselection()))
@@ -481,20 +485,16 @@ class Mouse:
         game.root.bind("<ButtonRelease-1>", self.released)
         game.root.bind("<Motion>", self.motion)
 
-        self.image = Image.open("images/mouseImages/HoveringCanPress.png")
-        self.image = ImageTk.PhotoImage(self.image)
-        self.canNotPressImage = Image.open("images/mouseImages/HoveringCanNotPress.png")
-        self.canNotPressImage = ImageTk.PhotoImage(self.canNotPressImage)
+        self.image = mouse.load_img('HoveringCanPress')
+        self.canNotPressImage = mouse.load_img('HoveringCanNotPress')
 
-    def clicked(self, event):
+    def clicked(self, _):
         self.pressed = True  # sets a variable
-        self.image = Image.open("images/mouseImages/Pressed.png")
-        self.image = ImageTk.PhotoImage(self.image)
+        self.image = mouse.load_img('Pressed')
 
-    def released(self, event):
+    def released(self, _):
         self.pressed = False
-        self.image = Image.open("images/mouseImages/HoveringCanPress.png")
-        self.image = ImageTk.PhotoImage(self.image)
+        self.image = mouse.load_img('HoveringCanPress')
 
     def motion(self, event):
         if event.widget == self.game.canvas:
@@ -608,8 +608,8 @@ class TrackingBullet(Projectile):
     def __init__(self, x, y, damage, speed, target):
         super().__init__(x, y, damage, speed)
         self.target = target
-        self.image = Image.open("images/projectileImages/bullet.png")
-        self.image = ImageTk.PhotoImage(self.image)
+        self.image = projectile.load_img('bullet')
+        self.length: float
 
     def move(self):
         self.length = (
@@ -632,8 +632,7 @@ class PowerShot(TrackingBullet):
     def __init__(self, x, y, damage, speed, target, slow):
         super(PowerShot, self).__init__(x, y, damage, speed, target)
         self.slow = slow
-        self.image = Image.open("images/projectileImages/powerShot.png")
-        self.image = ImageTk.PhotoImage(self.image)
+        self.image = projectile.load_img('powerShot')
 
     def gotMonster(self):
         self.target.health -= self.damage
@@ -648,8 +647,7 @@ class AngledProjectile(Projectile):
         self.xChange = speed * math.cos(angle)
         self.yChange = speed * math.sin(-angle)
         self.range = givenRange
-        self.image = Image.open("images/projectileImages/arrow.png")
-        self.image = ImageTk.PhotoImage(self.image.rotate(math.degrees(angle)))
+        self.image = projectile.load_arrow_img(angle)
         self.target = None
         self.speed = speed
         self.distance = 0
@@ -689,7 +687,7 @@ class TargetingTower(tower.ShootingTower):
 
     def prepareShot(self):
         monster_list = monster.gen_list(monsters)[self.targetList]
-
+        assert self.bulletsPerSecond is not None
         if self.ticks != 20 / self.bulletsPerSecond:
             self.ticks += 1
 
@@ -719,6 +717,10 @@ class TargetingTower(tower.ShootingTower):
                 ) ** 2:
                     self.target = monster_
 
+    @abstractmethod
+    def shoot(self) -> None:
+        ...
+
 
 class ArrowShooterTower(TargetingTower):
     def __init__(self, x, y, gridx, gridy):
@@ -730,6 +732,7 @@ class ArrowShooterTower(TargetingTower):
         self.damage = 10
         self.speed = blockSize
         self.upgradeCost = 50
+        self.angle: float
 
     def nextLevel(self):
         if self.level == 2:
@@ -803,6 +806,7 @@ class TackTower(TargetingTower):
         self.bulletsPerSecond = 1
         self.damage = 10
         self.speed = blockSize
+        self.angle: float
 
     def shoot(self):
         for i in range(8):
