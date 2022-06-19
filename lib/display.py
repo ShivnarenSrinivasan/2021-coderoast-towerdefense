@@ -25,7 +25,7 @@ from .buttons import (
 )
 from .tower import (
     ITowerMap,
-    ITargetingTower,
+    ITower,
 )
 from ._type_aliases import _Anchor
 
@@ -73,7 +73,7 @@ class Infoboard:
         self.canvas.create_text(80, 75, text=displayTower.name, font=("times", 20))
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
-        if not isinstance(displayTower, ITargetingTower):
+        if not isinstance(displayTower, ITower):
             return None
 
         self.currentButtons.extend(_gen_draw_info_buttons(self.canvas))
@@ -128,9 +128,7 @@ def _gen_draw_info_buttons(canvas: tk.Canvas) -> Iterable[Button]:
     return btns
 
 
-def _gen_draw_misc_buttons(
-    canvas: tk.Canvas, tower_: ITargetingTower
-) -> Iterable[Button]:
+def _gen_draw_misc_buttons(canvas: tk.Canvas, tower_: ITower) -> Iterable[Button]:
     BtnVal = list[tuple[Button, Value | None]]
     btn_text: BtnVal = [
         (StickyButton(*buttons.make_coords(10, 40, 19, 49)), None),

@@ -16,12 +16,12 @@ from .protocols import GameObject
 
 
 class ITowerMap(Protocol):
-    displayed: Tower | None
+    displayed: ITower | None
 
     def __iter__(self) -> Iterable[grid.Point]:
         ...
 
-    def __getitem__(self, p: grid.Point) -> Tower:
+    def __getitem__(self, p: grid.Point) -> ITower:
         ...
 
     def __contains__(self, p: grid.Point) -> bool:
@@ -30,13 +30,13 @@ class ITowerMap(Protocol):
     def __len__(self) -> int:
         ...
 
-    def __setitem__(self, p: grid.Point, tower: Tower) -> None:
+    def __setitem__(self, p: grid.Point, tower: ITower) -> None:
         ...
 
     def select(self, p: grid.Point) -> None:
         ...
 
-    def remove(self, tower: Tower) -> None:
+    def remove(self, tower: ITower) -> None:
         ...
 
 
@@ -158,9 +158,11 @@ class ShootingTower(Tower):
 
 
 @runtime_checkable
-class ITargetingTower(Protocol):
+class ITower(Protocol):
     targetList: int = 0
     stickyTarget: bool
+    name: str
+    upgradeCost: int
 
 
 towers = {

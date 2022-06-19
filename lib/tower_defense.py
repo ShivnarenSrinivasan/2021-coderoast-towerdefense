@@ -317,7 +317,7 @@ class Mouse:
                 block_, self.towerbox.selected, self.game.stats.money
             ):
                 self.game.stats.money -= add_tower(
-                    tower_map, block_, self.towerbox.selected
+                    tower_map, block_, self.towerbox.selected, self.game.block_dim
                 )
 
     def _out_update(self) -> None:
@@ -461,8 +461,9 @@ class AngledProjectile(Projectile):
 
 
 class TargetingTower(tower.ShootingTower):
-    def __init__(self, x, y, gridx, gridy):
-        super(TargetingTower, self).__init__(x, y, gridx, gridy)
+    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
+        super().__init__(x, y, gridx, gridy)
+        self.block_dim = block_dim
         self.target = None
         self.targetList = 0
         self.stickyTarget = False
@@ -475,15 +476,15 @@ class TargetingTower(tower.ShootingTower):
 
         if not self.stickyTarget:
             for monster_ in monster_list:
-                if (self.range + block_dim / 2) ** 2 >= (self.x - monster_.x) ** 2 + (
-                    self.y - monster_.y
-                ) ** 2:
+                if (self.range + self.block_dim / 2) ** 2 >= (
+                    self.x - monster_.x
+                ) ** 2 + (self.y - monster_.y) ** 2:
                     self.target = monster_
 
         if self.target:
             if (
                 self.target.alive
-                and (self.range + block_dim / 2)
+                and (self.range + self.block_dim / 2)
                 >= ((self.x - self.target.x) ** 2 + (self.y - self.target.y) ** 2)
                 ** 0.5
             ):
@@ -494,9 +495,9 @@ class TargetingTower(tower.ShootingTower):
                 self.target = None
         elif self.stickyTarget:
             for monster_ in monster_list:
-                if (self.range + block_dim / 2) ** 2 >= (self.x - monster_.x) ** 2 + (
-                    self.y - monster_.y
-                ) ** 2:
+                if (self.range + self.block_dim / 2) ** 2 >= (
+                    self.x - monster_.x
+                ) ** 2 + (self.y - monster_.y) ** 2:
                     self.target = monster_
 
     @abstractmethod
@@ -505,8 +506,8 @@ class TargetingTower(tower.ShootingTower):
 
 
 class ArrowShooterTower(TargetingTower):
-    def __init__(self, x, y, gridx, gridy):
-        super(ArrowShooterTower, self).__init__(x, y, gridx, gridy)
+    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
+        super().__init__(x, y, gridx, gridy, block_dim)
         self.name = "Arrow Shooter"
         self.infotext = "ArrowShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
         self.range = block_dim * 10
@@ -519,7 +520,7 @@ class ArrowShooterTower(TargetingTower):
     def nextLevel(self):
         if self.level == 2:
             self.upgradeCost = 100
-            self.range = block_dim * 11
+            self.range = self.block_dim * 11
             self.damage = 12
         elif self.level == 3:
             self.upgradeCost = None
@@ -535,14 +536,14 @@ class ArrowShooterTower(TargetingTower):
                 self.damage,
                 self.speed,
                 self.angle,
-                self.range + block_dim / 2,
+                self.range + self.block_dim / 2,
             )
         )
 
 
 class BulletShooterTower(TargetingTower):
-    def __init__(self, x, y, gridx, gridy):
-        super(BulletShooterTower, self).__init__(x, y, gridx, gridy)
+    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
+        super().__init__(x, y, gridx, gridy, block_dim)
         self.name = "Bullet Shooter"
         self.infotext = "BulletShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
         self.range = block_dim * 6
@@ -560,8 +561,8 @@ class BulletShooterTower(TargetingTower):
 
 
 class PowerTower(TargetingTower):
-    def __init__(self, x, y, gridx, gridy):
-        super(PowerTower, self).__init__(x, y, gridx, gridy)
+    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
+        super().__init__(x, y, gridx, gridy, block_dim)
         self.name = "Power Tower"
         self.infotext = "PowerTower at [" + str(gridx) + "," + str(gridy) + "]."
         self.range = block_dim * 8
@@ -580,8 +581,8 @@ class PowerTower(TargetingTower):
 
 
 class TackTower(TargetingTower):
-    def __init__(self, x, y, gridx, gridy):
-        super(TackTower, self).__init__(x, y, gridx, gridy)
+    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
+        super().__init__(x, y, gridx, gridy, block_dim)
         self.name = "Tack Tower"
         self.infotext = "TackTower at [" + str(gridx) + "," + str(gridy) + "]."
         self.range = block_dim * 5
@@ -603,7 +604,9 @@ class TackTower(TargetingTower):
         ...
 
 
-def tower_factory(tower_: str, loc: grid.Loc, grid_: grid.Point) -> tower.Tower:
+def tower_factory(
+    tower_: str, loc: grid.Loc, grid_: grid.Point, block_dim: Dimension
+) -> tower.Tower:
     towers = {
         "Arrow Shooter": ArrowShooterTower,
         "Bullet Shooter": BulletShooterTower,
@@ -611,7 +614,7 @@ def tower_factory(tower_: str, loc: grid.Loc, grid_: grid.Point) -> tower.Tower:
         "Power Tower": PowerTower,
     }
     tower_type = towers[tower_]
-    return tower_type(loc.x, loc.y, grid_.x, grid_.y)
+    return tower_type(loc.x, loc.y, grid_.x, grid_.y, block_dim)
 
 
 def select_tower(tower_map: ITowerMap, grid_: grid.Point) -> None:
@@ -629,8 +632,12 @@ def can_buy_tower(money_: int, tower_: str) -> bool:
     return money_ >= tower.cost(tower_)
 
 
-def add_tower(tower_map: ITowerMap, block_: Block, tower_: str) -> int:
-    tower_map[block_.grid_loc] = tower_factory(tower_, block_.loc, block_.grid_loc)
+def add_tower(
+    tower_map: ITowerMap, block_: Block, tower_: str, block_dim: Dimension
+) -> int:
+    tower_map[block_.grid_loc] = tower_factory(
+        tower_, block_.loc, block_.grid_loc, block_dim
+    )
     return tower.cost(tower_)
 
 
