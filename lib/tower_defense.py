@@ -308,16 +308,17 @@ class Infoboard:
 
         def _draw_info_buttons(canvas: tk.Canvas) -> None:
             def _target_btns() -> None:
+                text_config = dict(font=("times", 12), fill="white", anchor=tk.NW)
                 p1 = buttons.make_coords(26, 30, 35, 39)
 
                 self.currentButtons.append(TargetButton(*p1, 0))
                 canvas.create_text(
-                    37, 28, text="> Health", font=("times", 12), fill="white", anchor=tk.NW
+                    37, 28, text="> Health", **text_config
                 )
 
                 self.currentButtons.append(TargetButton(*p1, 1))
                 canvas.create_text(
-                    37, 48, text="< Health", font=("times", 12), fill="white", anchor=tk.NW
+                    37, 48, text="< Health", **text_config
                 )
 
                 self.currentButtons.append(
@@ -327,9 +328,7 @@ class Infoboard:
                     103,
                     48,
                     text="> Distance",
-                    font=("times", 12),
-                    fill="white",
-                    anchor=tk.NW,
+                    **text_config
                 )
 
                 self.currentButtons.append(
@@ -339,9 +338,7 @@ class Infoboard:
                     103,
                     28,
                     text="< Distance",
-                    font=("times", 12),
-                    fill="white",
-                    anchor=tk.NW,
+                    **text_config
                 )
 
             _target_btns()
