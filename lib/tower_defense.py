@@ -7,7 +7,7 @@ from collections.abc import (
     Sequence,
 )
 from functools import cached_property
-from typing import NamedTuple, TypedDict
+
 import tkinter as tk
 from PIL import Image, ImageTk
 
@@ -24,13 +24,15 @@ from . import (
 )
 from .block import Block
 from .buttons import Button
+from .display import (
+    Text,
+    Value,
+)
 from .grid import Grid
 from .maps import Dimension
 from .monster import IMonster
 
 from .game import Game, GameState
-
-from ._type_aliases import _Anchor
 
 blockSize = Dimension(20)  # pixels wide of each block
 
@@ -313,16 +315,6 @@ class Infoboard:
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
         def _draw_info_buttons(canvas: tk.Canvas) -> None:
-            class Value(NamedTuple):
-                coord: tuple[float, float]
-                text: str
-
-            class Text(TypedDict):
-                text: str
-                font: tuple[str, int]
-                fill: str
-                anchor: _Anchor
-
             def _target_btns(canvas: tk.Canvas) -> Iterable[Button]:
                 _c1, _c2 = (26, 30), (35, 39)
 
@@ -358,7 +350,9 @@ class Infoboard:
 
         _draw_info_buttons(self.canvas)
 
-        def _misc_buttons(canvas: tk.Canvas, tower_: TargetingTower) -> Iterable[Button]:
+        def _misc_buttons(
+            canvas: tk.Canvas, tower_: TargetingTower
+        ) -> Iterable[Button]:
             btns: list[Button] = [
                 StickyButton(*buttons.make_coords(10, 40, 19, 49)),
                 SellButton(*buttons.make_coords(5, 145, 78, 168)),
