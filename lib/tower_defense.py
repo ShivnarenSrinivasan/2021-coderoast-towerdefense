@@ -34,7 +34,6 @@ from .game import Game, GameState
 
 blockSize = Dimension(20)  # pixels wide of each block
 
-tower_map: dict[grid.Point, tower.Tower] = {}
 pathList = []
 monsters: list[IMonster] = []
 
@@ -63,7 +62,8 @@ class TowerDefenseGame(Game):
         self.block_dim = block_dim
         self.state = GameState.IDLE
         self.displayboard = display.Displayboard(self.frame, health, money)
-        infoboard = Infoboard(self.frame)
+        self.tower_map: dict[grid.Point, tower.Tower] = {}
+        infoboard = Infoboard(self.frame, self.tower_map)
         self.towerbox = Towerbox(self.frame, infoboard)
         self.grid = self._load_grid(map_name)
 
@@ -95,13 +95,13 @@ class TowerDefenseGame(Game):
         for monster_ in monsters:
             monster_.update()
 
-        for tower_ in tower_map.values():
+        for tower_ in self.tower_map.values():
             tower_.update()
 
     def paint(self) -> None:
         super().paint()
 
-        for tower_ in tower_map.values():
+        for tower_ in self.tower_map.values():
             tower_.paint(self.canvas)
 
         for monster_ in monster.sort_distance(monsters):
@@ -250,13 +250,13 @@ class TargetButton(buttons.Button):
         super().__init__(coord1, coord2)
         self.type = myType
 
-    def press(self):
+    def press(self, tower_map: dict[grid.Point, tower.Tower]):
         assert displayTower is not None
         displayTower.targetList = self.type
 
 
 class StickyButton(buttons.Button):
-    def press(self):
+    def press(self, tower_map: dict[grid.Point, tower.Tower]):
         assert displayTower is not None
         if not displayTower.stickyTarget:
             displayTower.stickyTarget = True
@@ -265,7 +265,7 @@ class StickyButton(buttons.Button):
 
 
 class SellButton(buttons.Button):
-    def press(self):
+    def press(self, tower_map: dict[grid.Point, tower.Tower]):
         global displayTower
         if displayTower is None:
             raise TypeError('Display Tower should be of type <Tower>')
@@ -274,7 +274,7 @@ class SellButton(buttons.Button):
 
 
 class UpgradeButton(buttons.Button):
-    def press(self):
+    def press(self, tower_map: dict[grid.Point, tower.Tower]):
         global money
         assert displayTower is not None and displayTower.upgradeCost is not None
         if money >= displayTower.upgradeCost:
@@ -353,10 +353,11 @@ def _gen_draw_misc_buttons(
 
 
 class Infoboard:
-    def __init__(self, frame: tk.Frame):
+    def __init__(self, frame: tk.Frame, tower_map: dict[grid.Point, tower.Tower]):
         self.canvas = tk.Canvas(
             master=frame, width=162, height=174, bg="gray", highlightthickness=0
         )
+        self.tower_map = tower_map
         self.canvas.grid(row=0, column=1)
         self.image = ImageTk.PhotoImage(Image.open("images/infoBoard.png"))
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
@@ -506,13 +507,13 @@ class Mouse:
 
     def _in_update(self) -> None:
         block_ = self.game.grid[self.gridx][self.gridy]
-        if block_.grid_loc in tower_map:
+        if block_.grid_loc in self.game.tower_map:
             if not is_tower_selected():
-                select_tower(block_.grid_loc)
+                select_tower(self.game.tower_map, block_.grid_loc)
                 self.infoboard.displaySpecific()
         else:
             if is_tower_selected() and can_add_tower(block_, selectedTower):
-                add_tower(block_, selectedTower)
+                add_tower(self.game.tower_map, block_, selectedTower)
 
     def _out_update(self) -> None:
         pos = grid.Point(self.x - self.xoffset, self.y - self.yoffset)
@@ -806,7 +807,7 @@ def tower_factory(tower_: str, loc: grid.Loc, grid_: grid.Point) -> tower.Tower:
     return tower_type(loc.x, loc.y, grid_.x, grid_.y)
 
 
-def select_tower(grid_: grid.Point) -> None:
+def select_tower(tower_map: dict[grid.Point, tower.Tower], grid_: grid.Point) -> None:
     tower_ = tower_map[grid_]
     tower_.clicked = True
     global displayTower
@@ -825,7 +826,9 @@ def can_buy_tower(money_: int, tower_: str) -> bool:
     return money_ >= tower.cost(tower_)
 
 
-def add_tower(block_: Block, tower_: str) -> None:
+def add_tower(
+    tower_map: dict[grid.Point, tower.Tower], block_: Block, tower_: str
+) -> None:
     global money
     tower_map[block_.grid_loc] = tower_factory(tower_, block_.loc, block_.grid_loc)
     money -= tower.cost(tower_)

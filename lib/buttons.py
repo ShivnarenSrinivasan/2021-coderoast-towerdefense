@@ -3,7 +3,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Protocol
 
-from . import grid
+from . import (
+    grid,
+    tower,
+)
 
 
 class BaseButton(Protocol):
@@ -24,7 +27,7 @@ class Button(ABC):
         return is_within_bounds(self, point)
 
     @abstractmethod
-    def press(self) -> None:
+    def press(self, tower_map: dict[grid.Point, tower.Tower]) -> None:
         """Implement press functionality."""
 
     def paint(self, canvas: tk.Canvas) -> None:
