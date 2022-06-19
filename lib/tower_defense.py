@@ -324,6 +324,7 @@ def _gen_draw_misc_buttons(
         ),
     ]
 
+    # NOTE: This section is quite confusing, see if it can be simplified
     btn_text1: BtnVal
     if tower_.upgradeCost:
         btn_text1 = [(UpgradeButton(*buttons.make_coords(82, 145, 155, 168)), None)]
@@ -338,6 +339,7 @@ def _gen_draw_misc_buttons(
         btn_text1 = []
 
     btn_texts_ = tuple(it.chain(btn_text, btn_text1))
+    # --------------------------
 
     display.create_texts(
         canvas,
