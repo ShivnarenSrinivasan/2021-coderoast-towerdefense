@@ -98,10 +98,10 @@ class TowerMap(GameObject):
 class Tower(ABC):
     def __init__(self, x: float, y: float, gridx: int, gridy: int):
         self.level: int = 1
-        self.range: int
-        self.x = x
-        self.y = y
-        self.gridx = gridx
+        self._range: int
+        self._x = x
+        self._y = y
+        self._gridx = gridx
         self.gridy = gridy
         self.image = load_img(self)
         self.targetList = 0
@@ -124,21 +124,21 @@ class Tower(ABC):
         self.nextLevel()
 
     def sold(self, tower_map: dict[grid.Point, Tower]) -> None:
-        point = grid.Point(self.gridx, self.gridy)
+        point = grid.Point(self._gridx, self.gridy)
         tower_map.pop(point)
 
     def paintSelect(self, canvas: tk.Canvas) -> None:
         canvas.create_oval(
-            self.x - self.range,
-            self.y - self.range,
-            self.x + self.range,
-            self.y + self.range,
+            self._x - self._range,
+            self._y - self._range,
+            self._x + self._range,
+            self._y + self._range,
             fill='',
             outline="white",
         )
 
     def paint(self, canvas: tk.Canvas) -> None:
-        canvas.create_image(self.x, self.y, image=self.image, anchor=tk.CENTER)
+        canvas.create_image(self._x, self._y, image=self.image, anchor=tk.CENTER)
         for proj in self._projectiles:
             proj.paint(canvas)
 
@@ -195,11 +195,11 @@ class TargetingTower(Tower):
         monsters: list[IMonster],
     ):
         super().__init__(x, y, gridx, gridy)
-        self.bulletsPerSecond: int
-        self.ticks = 0
-        self.damage = 0
-        self.block_dim = block_dim
-        self.target = None
+        self._bullets_per_second: int
+        self._ticks = 0
+        self._damage = 0
+        self._block_dim = block_dim
+        self._target = None
         self._monsters = monsters
 
     def update(self) -> None:
@@ -214,36 +214,36 @@ class TargetingTower(Tower):
 
     def _prepareShot(self):
         monster_list = monster.gen_list(self._monsters)[self.targetList]
-        if self.ticks != 20 / self.bulletsPerSecond:
-            self.ticks += 1
+        if self._ticks != 20 / self._bullets_per_second:
+            self._ticks += 1
 
         if not self.stickyTarget:
             for monster_ in monster_list:
-                if (self.range + self.block_dim / 2) ** 2 >= (
-                    self.x - monster_.x
-                ) ** 2 + (self.y - monster_.y) ** 2:
-                    self.target = monster_
+                if (self._range + self._block_dim / 2) ** 2 >= (
+                    self._x - monster_.x
+                ) ** 2 + (self._y - monster_.y) ** 2:
+                    self._target = monster_
 
-        if self.target:
+        if self._target:
             if (
-                not monster.is_dead(self.target)
-                and (self.range + self.block_dim / 2)
-                >= ((self.x - self.target.x) ** 2 + (self.y - self.target.y) ** 2)
+                not monster.is_dead(self._target)
+                and (self._range + self._block_dim / 2)
+                >= ((self._x - self._target.x) ** 2 + (self._y - self._target.y) ** 2)
                 ** 0.5
             ):
-                if self.ticks >= 20 / self.bulletsPerSecond:
-                    self.shoot()
-                    self.ticks = 0
+                if self._ticks >= 20 / self._bullets_per_second:
+                    self._shoot()
+                    self._ticks = 0
             else:
-                self.target = None
+                self._target = None
         elif self.stickyTarget:
             for monster_ in monster_list:
-                if (self.range + self.block_dim / 2) ** 2 >= (
-                    self.x - monster_.x
-                ) ** 2 + (self.y - monster_.y) ** 2:
-                    self.target = monster_
+                if (self._range + self._block_dim / 2) ** 2 >= (
+                    self._x - monster_.x
+                ) ** 2 + (self._y - monster_.y) ** 2:
+                    self._target = monster_
 
-    def shoot(self) -> None:
+    def _shoot(self) -> None:
         ...
 
     def _add(self, proj: IProjectile) -> None:
@@ -260,35 +260,37 @@ class ArrowShooterTower(TargetingTower):
         super().__init__(x, y, gridx, gridy, block_dim, monsters)
         self.name = "Arrow Shooter"
         self.infotext = "ArrowShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = block_dim * 10
-        self.bulletsPerSecond = 1
-        self.damage = 10
-        self.speed = block_dim
+        self._range = block_dim * 10
+        self._bullets_per_second = 1
+        self._damage = 10
+        self._speed = block_dim
         self.upgradeCost = 50
-        self.angle: float
         self._projectile_type = AngledProjectile
+
+    @property
+    def _angle(self) -> float:
+        assert self._target is not None
+        return math.atan2(self._y - self._target.y, self._target.x - self._x)
 
     def nextLevel(self):
         if self.level == 2:
             self.upgradeCost = 100
-            self.range = self.block_dim * 11
-            self.damage = 12
+            self._range = self._block_dim * 11
+            self._damage = 12
         elif self.level == 3:
             self.upgradeCost = None
-            self.bulletsPerSecond = 2
+            self._bullets_per_second = 2
 
-    def shoot(self):
-        assert self.target is not None
-        self.angle = math.atan2(self.y - self.target.y, self.target.x - self.x)
+    def _shoot(self):
         self._add(
             self._projectile_type(
-                self.x,
-                self.y,
-                self.damage,
-                self.speed,
-                self.angle,
-                self.range + self.block_dim / 2,
-                self.block_dim,
+                self._x,
+                self._y,
+                self._damage,
+                self._speed,
+                self._angle,
+                self._range + self._block_dim / 2,
+                self._block_dim,
             )
         )
 
@@ -300,16 +302,16 @@ class BulletShooterTower(TargetingTower):
         super().__init__(x, y, gridx, gridy, block_dim, monsters)
         self.name = "Bullet Shooter"
         self.infotext = "BulletShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = block_dim * 6
-        self.bulletsPerSecond = 4
-        self.damage = 5
-        self.speed = block_dim / 2
+        self._range = block_dim * 6
+        self._bullets_per_second = 4
+        self._damage = 5
+        self._speed = block_dim / 2
         self._projectile_type = TrackingBullet
 
-    def shoot(self):
+    def _shoot(self):
         self._add(
             self._projectile_type(
-                self.x, self.y, self.damage, self.speed, self.target, self.block_dim
+                self._x, self._y, self._damage, self._speed, self._target, self._block_dim
             )
         )
 
@@ -324,23 +326,23 @@ class PowerTower(TargetingTower):
         super().__init__(x, y, gridx, gridy, block_dim, monsters)
         self.name = "Power Tower"
         self.infotext = "PowerTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = block_dim * 8
-        self.bulletsPerSecond = 10
-        self.damage = 1
-        self.speed = block_dim
-        self.slow = 3
+        self._range = block_dim * 8
+        self._bullets_per_second = 10
+        self._damage = 1
+        self._speed = block_dim
+        self._slow = 3
         self._projectile_type = PowerShot
 
-    def shoot(self):
+    def _shoot(self):
         self._add(
             self._projectile_type(
-                self.x,
-                self.y,
-                self.damage,
-                self.speed,
-                self.target,
-                self.slow,
-                self.block_dim,
+                self._x,
+                self._y,
+                self._damage,
+                self._speed,
+                self._target,
+                self._slow,
+                self._block_dim,
             )
         )
 
@@ -355,25 +357,25 @@ class TackTower(TargetingTower):
         super().__init__(x, y, gridx, gridy, block_dim, monsters)
         self.name = "Tack Tower"
         self.infotext = "TackTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = block_dim * 5
-        self.bulletsPerSecond = 1
-        self.damage = 10
-        self.speed = block_dim
+        self._range = block_dim * 5
+        self._bullets_per_second = 1
+        self._damage = 10
+        self._speed = block_dim
         self.angle: float
         self._projectile_type = AngledProjectile
 
-    def shoot(self):
+    def _shoot(self):
         for i in range(8):
             self.angle = math.radians(i * 45)
             self._add(
                 self._projectile_type(
-                    self.x,
-                    self.y,
-                    self.damage,
-                    self.speed,
+                    self._x,
+                    self._y,
+                    self._damage,
+                    self._speed,
                     self.angle,
-                    self.range,
-                    self.block_dim,
+                    self._range,
+                    self._block_dim,
                 )
             )
 

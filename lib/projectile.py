@@ -43,12 +43,12 @@ class Projectile(ABC):
             self.should_remove = True
             return
         if self.hit:
-            self.gotMonster()
+            self._hit_monster()
             self.should_remove = True
-        self.move()
-        self.checkHit(monsters)
+        self._move()
+        self._check_hit(monsters)
 
-    def gotMonster(self):
+    def _hit_monster(self):
         assert self._target is not None
         self._target.health -= self._damage
 
@@ -56,11 +56,11 @@ class Projectile(ABC):
         canvas.create_image(self._x, self._y, image=self._image)
 
     @abstractmethod
-    def move(self) -> None:
+    def _move(self) -> None:
         ...
 
     @abstractmethod
-    def checkHit(self, monsters: list[IMonster]) -> None:
+    def _check_hit(self, monsters: list[IMonster]) -> None:
         ...
 
 
@@ -70,7 +70,7 @@ class TrackingBullet(Projectile):
         self._target = target
         self._image = load_img('bullet')
 
-    def move(self):
+    def _move(self):
         assert self._target
         length = (
             (self._x - (self._target.x)) ** 2 + (self._y - (self._target.y)) ** 2
@@ -80,7 +80,7 @@ class TrackingBullet(Projectile):
         self._x += self._speed * ((self._target.x) - self._x) / length
         self._y += self._speed * ((self._target.y) - self._y) / length
 
-    def checkHit(self, _: list[IMonster]):
+    def _check_hit(self, _: list[IMonster]):
         assert self._target
         if (
             self._speed**2
@@ -95,7 +95,7 @@ class PowerShot(TrackingBullet):
         self._slow = slow
         self._image = load_img('powerShot')
 
-    def gotMonster(self):
+    def _hit_monster(self):
         assert self._target
         self._target.health -= self._damage
         if self._target.movement > (self._target.speed) / self._slow:
@@ -114,7 +114,7 @@ class AngledProjectile(Projectile):
         self._speed = speed
         self._distance = 0
 
-    def checkHit(self, monsters: list[IMonster]):
+    def _check_hit(self, monsters: list[IMonster]):
         for monster_ in monsters:
             if (monster_.x - self._x) ** 2 + (monster_.y - self._y) ** 2 <= (
                 self._block_dim
@@ -123,14 +123,14 @@ class AngledProjectile(Projectile):
                 self._target = monster_
                 return
 
-    def gotMonster(self):
+    def _hit_monster(self):
         assert self._target
         self._target.health -= self._damage
         self._target.tick = 0
         self._target.maxTick = 5
         self.should_remove = True
 
-    def move(self):
+    def _move(self):
         self._x += self._x_change
         self._y += self._y_change
         self._distance += self._speed
