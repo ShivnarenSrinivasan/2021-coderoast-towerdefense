@@ -312,18 +312,18 @@ class Infoboard:
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
         def _draw_info_buttons(canvas: tk.Canvas) -> None:
-            def _target_btns() -> Iterable[TargetButton]:
+            class Value(NamedTuple):
+                coord: tuple[float, float]
+                text: str
+
+            class Text(TypedDict):
+                text: str
+                font: tuple[str, int]
+                fill: str
+                anchor: _Anchor
+
+            def _target_btns(canvas: tk.Canvas) -> Iterable[buttons.Button]:
                 _c1, _c2 = (26, 30), (35, 39)
-
-                class Value(NamedTuple):
-                    coord: tuple[float, float]
-                    text: str
-
-                class Text(TypedDict):
-                    text: str
-                    font: tuple[str, int]
-                    fill: str
-                    anchor: _Anchor
 
                 def make_btn(
                     c1: tuple[int, int], c2: tuple[int, int], btn_type: int
@@ -349,7 +349,7 @@ class Infoboard:
 
                 return (item[0] for item in buttons_and_text)
 
-            self.currentButtons.extend(_target_btns())
+            self.currentButtons.extend(_target_btns(canvas))
 
         if issubclass(displayTower.__class__, TargetingTower):
             _draw_info_buttons(self.canvas)
