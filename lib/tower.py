@@ -104,6 +104,10 @@ class Tower(ABC):
         self.gridx = gridx
         self.gridy = gridy
         self.image = load_img(self)
+        self.targetList = 0
+        self.stickyTarget = False
+        self.name: str
+        self.upgradeCost: int
         self._projectiles: list[IProjectile] = []
 
     @abstractmethod
@@ -196,8 +200,6 @@ class TargetingTower(Tower):
         self.damage = 0
         self.block_dim = block_dim
         self.target = None
-        self.targetList = 0
-        self.stickyTarget = False
         self._monsters = monsters
 
     def update(self) -> None:

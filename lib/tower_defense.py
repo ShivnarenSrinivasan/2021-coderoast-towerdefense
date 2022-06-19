@@ -20,18 +20,12 @@ from .grid import Grid
 from .maps import Dimension
 from .monster import IMonster
 from .tower import ITowerMap
-from .projectile import Projectile
 
 from .game import Game, GameState, Stats
 
 block_dim = Dimension(20)  # pixels wide of each block
 
 pathList = []
-monsters: list[IMonster] = []
-
-projectiles: list[Projectile] = []
-health = 100
-
 
 class TowerDefenseGame(Game):
     def __init__(
@@ -87,6 +81,10 @@ class TowerDefenseGame(Game):
             monster_.update()
             if monster.is_dead(monster_):
                 self.monsters.remove(monster_)
+                self.monsters.extend(monster_.children)
+                self.stats.money += monster_.value
+            if monster_.got_through:
+                self.stats.health -= monster_.damage
 
     def paint(self) -> None:
         super().paint()
@@ -331,7 +329,7 @@ class Mouse:
         ):
             self.game.set_state(GameState.WAIT_FOR_SPAWN)
         if self.pressed:
-            self.game.stats.money -= self.infoboard.buttonsCheck(
+            self.game.stats.money += self.infoboard.buttonsCheck(
                 pos, self.game.stats.money
             )
 
@@ -378,7 +376,6 @@ def add_tower(
 
 class Monster:
     def __init__(self, distance: float, spawn: grid.Loc):
-        self.image = None
         self.health = 0
         self.maxHealth = 0
         self.speed = 0.0
@@ -388,16 +385,16 @@ class Monster:
         self.distanceTravelled = max(distance, 0.0)
         self.spawn = spawn
         self.x, self.y = self.positionFormula()
-        self.armor = 0
-        self.magicresist = 0
         self.value = 0
         self.image = monster.load_img(self)
         self.axis: int | float
+        self.children: list[IMonster] = []
+        self.got_through: bool = False
+        self.damage: int = 1
 
     def update(self):
-        if self.health <= 0:
-            # TODO: Handle money increase when monsters killed
-            self.killed()
+        if monster.is_dead(self):
+            self.die()
         self.move()
 
     def move(self):
@@ -409,6 +406,7 @@ class Monster:
             self.maxTick = 1
         self.tick += 1
 
+    # TODO: Optimize this section, as recomputing each time
     def positionFormula(self) -> grid.Loc:
         dist = self.distanceTravelled
         x = self.spawn.x
@@ -434,16 +432,17 @@ class Monster:
             else:
                 y -= dist % block_dim
         if pathList[blocks] == 5:
-            self.gotThrough()
+            self.health = 0
+            self.got_through = True
 
         return grid.Loc(x, y)
 
-    def killed(self):
+    def die(self):
         ...
 
-    def gotThrough(self):
-        global health
-        health -= 1
+    @property
+    def _spawn_children_loc(self) -> float:
+        return self.distanceTravelled + block_dim * (0.5 - random.random())
 
     def paint(self, canvas: tk.Canvas):
         canvas.create_rectangle(
@@ -486,12 +485,8 @@ class Monster2(Monster):
         self.movement = float(block_dim) / 4
         self.axis = block_dim / 2
 
-    def killed(self):
-        monsters.append(
-            Monster1(
-                self.distanceTravelled + block_dim * (0.5 - random.random()), self.spawn
-            )
-        )
+    def die(self):
+        self.children = [Monster1(self._spawn_children_loc, self.spawn)]
 
 
 class AlexMonster(Monster):
@@ -504,14 +499,14 @@ class AlexMonster(Monster):
         self.movement = float(block_dim) / 5
         self.axis = block_dim
 
-    def killed(self):
-        for _ in range(5):
-            monsters.append(
-                Monster2(
-                    self.distanceTravelled + block_dim * (0.5 - random.random()),
-                    self.spawn,
-                )
+    def die(self):
+        self.children = [
+            Monster2(
+                self._spawn_children_loc,
+                self.spawn,
             )
+            for _ in range(5)
+        ]
 
 
 class BenMonster(Monster):
@@ -524,14 +519,14 @@ class BenMonster(Monster):
         self.movement = float(block_dim) / 4
         self.axis = block_dim / 2
 
-    def killed(self):
-        for _ in range(2):
-            monsters.append(
-                LeoMonster(
-                    self.distanceTravelled + block_dim * (0.5 - random.random()),
-                    self.spawn,
-                )
+    def die(self):
+        self.children = [
+            LeoMonster(
+                self._spawn_children_loc,
+                self.spawn,
             )
+            for _ in range(2)
+        ]
 
 
 class LeoMonster(Monster):
@@ -546,7 +541,7 @@ class LeoMonster(Monster):
 
 
 class MonsterBig(Monster):
-    def __init__(self, distance: float, spawn: grid.Loc):
+    def __init__(self, distance: float, spawn: grid.Loc, block_dim):
         super().__init__(distance, spawn)
         self.maxHealth = 1000
         self.health = self.maxHealth

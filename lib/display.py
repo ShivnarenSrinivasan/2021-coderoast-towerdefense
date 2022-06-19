@@ -44,7 +44,8 @@ class Infoboard:
         self.text: str | None
 
     def buttonsCheck(self, point: grid.Point, money: int) -> int:
-        cost = 0
+        amt = 0
+        displayTower = self.tower_map.displayed
         for btn in self.currentButtons:
             if not btn.can_press(point):
                 continue
@@ -52,14 +53,16 @@ class Infoboard:
             btn.press(self.tower_map)
 
             if isinstance(btn, UpgradeButton):
-                displayTower = self.tower_map.displayed
                 assert displayTower is not None and displayTower.upgradeCost is not None
                 if money >= displayTower.upgradeCost:
-                    cost = displayTower.upgradeCost
+                    amt = -displayTower.upgradeCost
                     displayTower.upgrade()
+            if isinstance(btn, SellButton):
+                assert displayTower is not None and displayTower.upgradeCost is not None
+                amt = int(-0.5 * displayTower.upgradeCost)
             self.displaySpecific()
-            return cost
-        return cost
+            return amt
+        return amt
 
     def displaySpecific(self):
         self.canvas.delete(tk.ALL)  # clear the screen

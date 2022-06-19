@@ -1,3 +1,4 @@
+from __future__ import annotations
 from collections.abc import (
     Sequence,
 )
@@ -21,13 +22,14 @@ class IMonster(GameObject, Movable, Protocol):
     health: int
     x: float
     y: float
+    value: int
     tick: int
     maxTick: int
+    got_through: bool
+    damage: int
+    children: list[IMonster]
 
-    def killed(self) -> None:
-        ...
-
-    def gotThrough(self) -> None:
+    def die(self) -> None:
         ...
 
 
