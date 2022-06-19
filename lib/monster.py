@@ -18,7 +18,6 @@ from .protocols import (
 
 @runtime_checkable
 class IMonster(GameObject, Movable, Protocol):
-    alive: bool
     health: int
     x: float
     y: float
@@ -27,9 +26,6 @@ class IMonster(GameObject, Movable, Protocol):
         ...
 
     def gotThrough(self) -> None:
-        ...
-
-    def die(self) -> None:
         ...
 
 
@@ -54,3 +50,7 @@ def sort_distance(
 def load_img(monster: IMonster) -> ImageTk.PhotoImage:
     img_fp = Path(f'monster/{monster.__class__.__name__}.png')
     return io.load_img_tk(img_fp)
+
+
+def is_dead(monster: IMonster) -> bool:
+    return monster.health <= 0

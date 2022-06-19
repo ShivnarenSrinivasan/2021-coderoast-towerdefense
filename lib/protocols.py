@@ -6,6 +6,8 @@ from .grid import Loc
 
 class Movable(Protocol):
     distanceTravelled: float
+    speed: float
+    movement: float
 
     def move(self) -> None:
         ...

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 import tkinter as tk
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
@@ -11,8 +12,17 @@ from PIL import ImageTk
 from . import (
     grid,
     io,
+    monster,
 )
 from .protocols import GameObject
+from .maps import Dimension
+from .monster import IMonster
+from .projectile import (
+    IProjectile,
+    AngledProjectile,
+    PowerShot,
+    TrackingBullet,
+)
 
 
 class ITowerMap(Protocol):
@@ -64,7 +74,6 @@ class TowerMap(GameObject):
 
     def select(self, p: grid.Point) -> None:
         tower = self[p]
-        tower.clicked = True
         self.displayed = tower
 
     def update(self) -> None:
@@ -88,15 +97,14 @@ class TowerMap(GameObject):
 
 class Tower(ABC):
     def __init__(self, x: float, y: float, gridx: int, gridy: int):
-        self.upgradeCost = None
         self.level: int = 1
-        self.range: int = 0
-        self.clicked: bool = False
+        self.range: int
         self.x = x
         self.y = y
         self.gridx = gridx
         self.gridy = gridy
         self.image = load_img(self)
+        self._projectiles: list[IProjectile] = []
 
     @abstractmethod
     def update(self) -> None:
@@ -127,6 +135,8 @@ class Tower(ABC):
 
     def paint(self, canvas: tk.Canvas) -> None:
         canvas.create_image(self.x, self.y, image=self.image, anchor=tk.CENTER)
+        for proj in self._projectiles:
+            proj.paint(canvas)
 
 
 def load_img(tower: Tower | str) -> ImageTk.PhotoImage:
@@ -139,22 +149,6 @@ def load_img(tower: Tower | str) -> ImageTk.PhotoImage:
             raise ValueError(f"Unhandled type {type(tower)}")
 
     return io.load_img_tk(img_fp)
-
-
-class ShootingTower(Tower):
-    def __init__(self, x: float, y: float, gridx: int, gridy: int):
-        super(ShootingTower, self).__init__(x, y, gridx, gridy)
-        self.bulletsPerSecond = None
-        self.ticks = 0
-        self.damage = 0
-        self.speed = None
-
-    def update(self) -> None:
-        self.prepareShot()
-
-    @abstractmethod
-    def prepareShot(self) -> None:
-        ...
 
 
 @runtime_checkable
@@ -181,3 +175,216 @@ def cost(tower: str) -> int:
         "Power Tower": 200,
     }
     return _costs[tower]
+
+
+class TargetingTower(Tower):
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        gridx: int,
+        gridy: int,
+        block_dim: Dimension,
+        monsters: list[IMonster],
+    ):
+        super().__init__(x, y, gridx, gridy)
+        self.bulletsPerSecond: int
+        self.ticks = 0
+        self.damage = 0
+        self.block_dim = block_dim
+        self.target = None
+        self.targetList = 0
+        self.stickyTarget = False
+        self._monsters = monsters
+
+    def update(self) -> None:
+        self._prepareShot()
+        for proj in self._projectiles:
+            proj.update(self._monsters)
+            if proj.should_remove:
+                self._projectiles.remove(proj)
+
+    def _prepareShot(self):
+        monster_list = monster.gen_list(self._monsters)[self.targetList]
+        if self.ticks != 20 / self.bulletsPerSecond:
+            self.ticks += 1
+
+        if not self.stickyTarget:
+            for monster_ in monster_list:
+                if (self.range + self.block_dim / 2) ** 2 >= (
+                    self.x - monster_.x
+                ) ** 2 + (self.y - monster_.y) ** 2:
+                    self.target = monster_
+
+        if self.target:
+            if (
+                not monster.is_dead(self.target)
+                and (self.range + self.block_dim / 2)
+                >= ((self.x - self.target.x) ** 2 + (self.y - self.target.y) ** 2)
+                ** 0.5
+            ):
+                if self.ticks >= 20 / self.bulletsPerSecond:
+                    self.shoot()
+                    self.ticks = 0
+            else:
+                self.target = None
+        elif self.stickyTarget:
+            for monster_ in monster_list:
+                if (self.range + self.block_dim / 2) ** 2 >= (
+                    self.x - monster_.x
+                ) ** 2 + (self.y - monster_.y) ** 2:
+                    self.target = monster_
+
+    def shoot(self) -> None:
+        ...
+
+    def _add(self, proj: IProjectile) -> None:
+        self._projectiles.append(proj)
+
+    def _remove(self, proj: IProjectile) -> None:
+        self._projectiles.remove(proj)
+
+
+class ArrowShooterTower(TargetingTower):
+    def __init__(
+        self, x, y, gridx, gridy, block_dim: Dimension, monsters: list[IMonster]
+    ):
+        super().__init__(x, y, gridx, gridy, block_dim, monsters)
+        self.name = "Arrow Shooter"
+        self.infotext = "ArrowShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
+        self.range = block_dim * 10
+        self.bulletsPerSecond = 1
+        self.damage = 10
+        self.speed = block_dim
+        self.upgradeCost = 50
+        self.angle: float
+        self._projectile_type = AngledProjectile
+
+    def nextLevel(self):
+        if self.level == 2:
+            self.upgradeCost = 100
+            self.range = self.block_dim * 11
+            self.damage = 12
+        elif self.level == 3:
+            self.upgradeCost = None
+            self.bulletsPerSecond = 2
+
+    def shoot(self):
+        assert self.target is not None
+        self.angle = math.atan2(self.y - self.target.y, self.target.x - self.x)
+        self._add(
+            self._projectile_type(
+                self.x,
+                self.y,
+                self.damage,
+                self.speed,
+                self.angle,
+                self.range + self.block_dim / 2,
+                self.block_dim,
+            )
+        )
+
+
+class BulletShooterTower(TargetingTower):
+    def __init__(
+        self, x, y, gridx, gridy, block_dim: Dimension, monsters: list[IMonster]
+    ):
+        super().__init__(x, y, gridx, gridy, block_dim, monsters)
+        self.name = "Bullet Shooter"
+        self.infotext = "BulletShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
+        self.range = block_dim * 6
+        self.bulletsPerSecond = 4
+        self.damage = 5
+        self.speed = block_dim / 2
+        self._projectile_type = TrackingBullet
+
+    def shoot(self):
+        self._add(
+            self._projectile_type(
+                self.x, self.y, self.damage, self.speed, self.target, self.block_dim
+            )
+        )
+
+    def nextLevel(self) -> None:
+        ...
+
+
+class PowerTower(TargetingTower):
+    def __init__(
+        self, x, y, gridx, gridy, block_dim: Dimension, monsters: list[IMonster]
+    ):
+        super().__init__(x, y, gridx, gridy, block_dim, monsters)
+        self.name = "Power Tower"
+        self.infotext = "PowerTower at [" + str(gridx) + "," + str(gridy) + "]."
+        self.range = block_dim * 8
+        self.bulletsPerSecond = 10
+        self.damage = 1
+        self.speed = block_dim
+        self.slow = 3
+        self._projectile_type = PowerShot
+
+    def shoot(self):
+        self._add(
+            self._projectile_type(
+                self.x,
+                self.y,
+                self.damage,
+                self.speed,
+                self.target,
+                self.slow,
+                self.block_dim,
+            )
+        )
+
+    def nextLevel(self) -> None:
+        ...
+
+
+class TackTower(TargetingTower):
+    def __init__(
+        self, x, y, gridx, gridy, block_dim: Dimension, monsters: list[IMonster]
+    ):
+        super().__init__(x, y, gridx, gridy, block_dim, monsters)
+        self.name = "Tack Tower"
+        self.infotext = "TackTower at [" + str(gridx) + "," + str(gridy) + "]."
+        self.range = block_dim * 5
+        self.bulletsPerSecond = 1
+        self.damage = 10
+        self.speed = block_dim
+        self.angle: float
+        self._projectile_type = AngledProjectile
+
+    def shoot(self):
+        for i in range(8):
+            self.angle = math.radians(i * 45)
+            self._add(
+                self._projectile_type(
+                    self.x,
+                    self.y,
+                    self.damage,
+                    self.speed,
+                    self.angle,
+                    self.range,
+                    self.block_dim,
+                )
+            )
+
+    def nextLevel(self) -> None:
+        ...
+
+
+def tower_factory(
+    tower_: str,
+    loc: grid.Loc,
+    grid_: grid.Point,
+    block_dim: Dimension,
+    monsters: list[IMonster],
+) -> Tower:
+    towers_ = {
+        "Arrow Shooter": ArrowShooterTower,
+        "Bullet Shooter": BulletShooterTower,
+        "Tack Tower": TackTower,
+        "Power Tower": PowerTower,
+    }
+    tower_type = towers_[tower_]
+    return tower_type(loc.x, loc.y, grid_.x, grid_.y, block_dim, monsters)

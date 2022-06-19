@@ -1,12 +1,9 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
-import math
 import random
 from collections.abc import Sequence
 from functools import cached_property
 
 import tkinter as tk
-from PIL import ImageTk
 
 from . import (
     buttons,
@@ -16,7 +13,6 @@ from . import (
     maps,
     monster,
     mouse,
-    projectile,
     tower,
 )
 from .block import Block
@@ -24,6 +20,7 @@ from .grid import Grid
 from .maps import Dimension
 from .monster import IMonster
 from .tower import ITowerMap
+from .projectile import Projectile
 
 from .game import Game, GameState, Stats
 
@@ -60,6 +57,7 @@ class TowerDefenseGame(Game):
         infoboard = display.Infoboard(self.frame, tower_map)
         self.towerbox = display.Towerbox(self.frame, infoboard, tower_map)
         self.grid = self._load_grid(map_name)
+        self.monsters: list[IMonster] = []
 
         self.add_objects(
             [
@@ -84,23 +82,20 @@ class TowerDefenseGame(Game):
     def update(self) -> None:
         super().update()
         self.displayboard.update(self.stats)
-        for p in projectiles:
-            p.update()
 
-        for monster_ in monsters:
+        for monster_ in self.monsters:
             monster_.update()
+            if monster.is_dead(monster_):
+                self.monsters.remove(monster_)
 
     def paint(self) -> None:
         super().paint()
 
-        for monster_ in monster.sort_distance(monsters):
+        for monster_ in monster.sort_distance(self.monsters):
             monster_.paint(self.canvas)
 
-        for projectile_ in projectiles:
-            projectile_.paint(self.canvas)
-
         self.displayboard.paint(
-            'blue' if self.is_idle and len(monsters) == 0 else 'red'
+            'blue' if self.is_idle and len(self.monsters) == 0 else 'red'
         )
 
     def set_state(self, state: GameState) -> None:
@@ -209,7 +204,7 @@ class Wavegenerator:
     def spawnMonster(self):
         monster_idx = self.currentWave[self.currentMonster]
 
-        monsters.append(monster_factory(monster_idx, self.spawn))
+        self.game.monsters.append(monster_factory(monster_idx, self.spawn))
         self.currentMonster = self.currentMonster + 1
 
     def update(self):
@@ -317,7 +312,11 @@ class Mouse:
                 block_, self.towerbox.selected, self.game.stats.money
             ):
                 self.game.stats.money -= add_tower(
-                    tower_map, block_, self.towerbox.selected, self.game.block_dim
+                    tower_map,
+                    block_,
+                    self.towerbox.selected,
+                    self.game.block_dim,
+                    self.game.monsters,
                 )
 
     def _out_update(self) -> None:
@@ -327,7 +326,7 @@ class Mouse:
             [
                 self.pressed,
                 buttons.is_within_bounds(btn, pos),
-                can_spawn(self.game, monsters),
+                can_spawn(self.game, self.game.monsters),
             ]
         ):
             self.game.set_state(GameState.WAIT_FOR_SPAWN)
@@ -350,276 +349,8 @@ class Mouse:
         )
 
 
-class Projectile(ABC):
-    def __init__(self, x, y, damage, speed):
-        self.hit = False
-        self.x = x
-        self.y = y
-        self.speed = block_dim / 2
-        self.damage = damage
-        self.speed = speed
-        self.target: Monster
-        self.image: ImageTk.PhotoImage
-
-    def update(self) -> None:
-        if self.target and not self.target.alive:
-            projectiles.remove(self)
-            return
-        if self.hit:
-            self.gotMonster()
-        self.move()
-        self.checkHit()
-
-    def gotMonster(self):
-        self.target.health -= self.damage
-        projectiles.remove(self)
-
-    def paint(self, canvas: tk.Canvas) -> None:
-        canvas.create_image(self.x, self.y, image=self.image)
-
-    @abstractmethod
-    def move(self) -> None:
-        ...
-
-    @abstractmethod
-    def checkHit(self) -> None:
-        ...
-
-
-class TrackingBullet(Projectile):
-    def __init__(self, x, y, damage, speed, target):
-        super().__init__(x, y, damage, speed)
-        self.target = target
-        self.image = projectile.load_img('bullet')
-        self.length: float
-
-    def move(self):
-        self.length = (
-            (self.x - (self.target.x)) ** 2 + (self.y - (self.target.y)) ** 2
-        ) ** 0.5
-        if self.length <= 0:
-            return
-        self.x += self.speed * ((self.target.x) - self.x) / self.length
-        self.y += self.speed * ((self.target.y) - self.y) / self.length
-
-    def checkHit(self):
-        if (
-            self.speed**2
-            > (self.x - (self.target.x)) ** 2 + (self.y - (self.target.y)) ** 2
-        ):
-            self.hit = True
-
-
-class PowerShot(TrackingBullet):
-    def __init__(self, x, y, damage, speed, target, slow):
-        super(PowerShot, self).__init__(x, y, damage, speed, target)
-        self.slow = slow
-        self.image = projectile.load_img('powerShot')
-
-    def gotMonster(self):
-        self.target.health -= self.damage
-        if self.target.movement > (self.target.speed) / self.slow:
-            self.target.movement = (self.target.speed) / self.slow
-        projectiles.remove(self)
-
-
-class AngledProjectile(Projectile):
-    def __init__(self, x, y, damage, speed, angle, givenRange):
-        super(AngledProjectile, self).__init__(x, y, damage, speed)
-        self.xChange = speed * math.cos(angle)
-        self.yChange = speed * math.sin(-angle)
-        self.range = givenRange
-        self.image = projectile.load_arrow_img(angle)
-        self.target = None
-        self.speed = speed
-        self.distance = 0
-
-    def checkHit(self):
-        for monster_ in monsters:
-            if (monster_.x - self.x) ** 2 + (monster_.y - self.y) ** 2 <= (
-                block_dim
-            ) ** 2:
-                self.hit = True
-                self.target = monster_
-                return
-
-    def gotMonster(self):
-        self.target.health -= self.damage
-        self.target.tick = 0
-        self.target.maxTick = 5
-        projectiles.remove(self)
-
-    def move(self):
-        self.x += self.xChange
-        self.y += self.yChange
-        self.distance += self.speed
-        if self.distance >= self.range:
-            try:
-                projectiles.remove(self)
-            except ValueError:
-                pass
-
-
-class TargetingTower(tower.ShootingTower):
-    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
-        super().__init__(x, y, gridx, gridy)
-        self.block_dim = block_dim
-        self.target = None
-        self.targetList = 0
-        self.stickyTarget = False
-
-    def prepareShot(self):
-        monster_list = monster.gen_list(monsters)[self.targetList]
-        assert self.bulletsPerSecond is not None
-        if self.ticks != 20 / self.bulletsPerSecond:
-            self.ticks += 1
-
-        if not self.stickyTarget:
-            for monster_ in monster_list:
-                if (self.range + self.block_dim / 2) ** 2 >= (
-                    self.x - monster_.x
-                ) ** 2 + (self.y - monster_.y) ** 2:
-                    self.target = monster_
-
-        if self.target:
-            if (
-                self.target.alive
-                and (self.range + self.block_dim / 2)
-                >= ((self.x - self.target.x) ** 2 + (self.y - self.target.y) ** 2)
-                ** 0.5
-            ):
-                if self.ticks >= 20 / self.bulletsPerSecond:
-                    self.shoot()
-                    self.ticks = 0
-            else:
-                self.target = None
-        elif self.stickyTarget:
-            for monster_ in monster_list:
-                if (self.range + self.block_dim / 2) ** 2 >= (
-                    self.x - monster_.x
-                ) ** 2 + (self.y - monster_.y) ** 2:
-                    self.target = monster_
-
-    @abstractmethod
-    def shoot(self) -> None:
-        ...
-
-
-class ArrowShooterTower(TargetingTower):
-    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
-        super().__init__(x, y, gridx, gridy, block_dim)
-        self.name = "Arrow Shooter"
-        self.infotext = "ArrowShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = block_dim * 10
-        self.bulletsPerSecond = 1
-        self.damage = 10
-        self.speed = block_dim
-        self.upgradeCost = 50
-        self.angle: float
-
-    def nextLevel(self):
-        if self.level == 2:
-            self.upgradeCost = 100
-            self.range = self.block_dim * 11
-            self.damage = 12
-        elif self.level == 3:
-            self.upgradeCost = None
-            self.bulletsPerSecond = 2
-
-    def shoot(self):
-        assert self.target is not None
-        self.angle = math.atan2(self.y - self.target.y, self.target.x - self.x)
-        projectiles.append(
-            AngledProjectile(
-                self.x,
-                self.y,
-                self.damage,
-                self.speed,
-                self.angle,
-                self.range + self.block_dim / 2,
-            )
-        )
-
-
-class BulletShooterTower(TargetingTower):
-    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
-        super().__init__(x, y, gridx, gridy, block_dim)
-        self.name = "Bullet Shooter"
-        self.infotext = "BulletShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = block_dim * 6
-        self.bulletsPerSecond = 4
-        self.damage = 5
-        self.speed = block_dim / 2
-
-    def shoot(self):
-        projectiles.append(
-            TrackingBullet(self.x, self.y, self.damage, self.speed, self.target)
-        )
-
-    def nextLevel(self) -> None:
-        ...
-
-
-class PowerTower(TargetingTower):
-    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
-        super().__init__(x, y, gridx, gridy, block_dim)
-        self.name = "Power Tower"
-        self.infotext = "PowerTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = block_dim * 8
-        self.bulletsPerSecond = 10
-        self.damage = 1
-        self.speed = block_dim
-        self.slow = 3
-
-    def shoot(self):
-        projectiles.append(
-            PowerShot(self.x, self.y, self.damage, self.speed, self.target, self.slow)
-        )
-
-    def nextLevel(self) -> None:
-        ...
-
-
-class TackTower(TargetingTower):
-    def __init__(self, x, y, gridx, gridy, block_dim: Dimension):
-        super().__init__(x, y, gridx, gridy, block_dim)
-        self.name = "Tack Tower"
-        self.infotext = "TackTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = block_dim * 5
-        self.bulletsPerSecond = 1
-        self.damage = 10
-        self.speed = block_dim
-        self.angle: float
-
-    def shoot(self):
-        for i in range(8):
-            self.angle = math.radians(i * 45)
-            projectiles.append(
-                AngledProjectile(
-                    self.x, self.y, self.damage, self.speed, self.angle, self.range
-                )
-            )
-
-    def nextLevel(self) -> None:
-        ...
-
-
-def tower_factory(
-    tower_: str, loc: grid.Loc, grid_: grid.Point, block_dim: Dimension
-) -> tower.Tower:
-    towers = {
-        "Arrow Shooter": ArrowShooterTower,
-        "Bullet Shooter": BulletShooterTower,
-        "Tack Tower": TackTower,
-        "Power Tower": PowerTower,
-    }
-    tower_type = towers[tower_]
-    return tower_type(loc.x, loc.y, grid_.x, grid_.y, block_dim)
-
-
 def select_tower(tower_map: ITowerMap, grid_: grid.Point) -> None:
     tower_ = tower_map[grid_]
-    tower_.clicked = True
     tower_map.displayed = tower_
 
 
@@ -633,17 +364,20 @@ def can_buy_tower(money_: int, tower_: str) -> bool:
 
 
 def add_tower(
-    tower_map: ITowerMap, block_: Block, tower_: str, block_dim: Dimension
+    tower_map: ITowerMap,
+    block_: Block,
+    tower_: str,
+    block_dim: Dimension,
+    monsters: list[IMonster],
 ) -> int:
-    tower_map[block_.grid_loc] = tower_factory(
-        tower_, block_.loc, block_.grid_loc, block_dim
+    tower_map[block_.grid_loc] = tower.tower_factory(
+        tower_, block_.loc, block_.grid_loc, block_dim, monsters
     )
     return tower.cost(tower_)
 
 
 class Monster:
     def __init__(self, distance: float, spawn: grid.Loc):
-        self.alive = True
         self.image = None
         self.health = 0
         self.maxHealth = 0
@@ -705,16 +439,11 @@ class Monster:
         return grid.Loc(x, y)
 
     def killed(self):
-        self.die()
+        ...
 
     def gotThrough(self):
         global health
         health -= 1
-        self.die()
-
-    def die(self):
-        self.alive = False
-        monsters.remove(self)
 
     def paint(self, canvas: tk.Canvas):
         canvas.create_rectangle(
@@ -763,7 +492,6 @@ class Monster2(Monster):
                 self.distanceTravelled + block_dim * (0.5 - random.random()), self.spawn
             )
         )
-        self.die()
 
 
 class AlexMonster(Monster):
@@ -784,7 +512,6 @@ class AlexMonster(Monster):
                     self.spawn,
                 )
             )
-        self.die()
 
 
 class BenMonster(Monster):
@@ -805,7 +532,6 @@ class BenMonster(Monster):
                     self.spawn,
                 )
             )
-        self.die()
 
 
 class LeoMonster(Monster):
