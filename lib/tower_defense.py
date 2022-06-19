@@ -103,124 +103,124 @@ class TowerDefenseGame(Game):
 
 class Wavegenerator:
     def __init__(self, game: TowerDefenseGame):
-        self.game = game
-        self.currentWave: Sequence[int]
-        self.currentMonster = 0
-        self.direction = None
-        self.gridx = 0
-        self.gridy = 0
-        self.spawn = self.findSpawn()
-        self.decideMove()
-        self.ticks = 1
-        self.maxTicks = 2
-        self.waveFile = open("texts/waveTexts/WaveGenerator2.txt", "r")
+        self._game = game
+        self._current_wave: Sequence[int]
+        self._curr_monster = 0
+        self._direction = None
+        self._gridx = 0
+        self._gridy = 0
+        self.spawn = self._findSpawn()
+        self._decideMove()
+        self._ticks = 1
+        self._max_ticks = 2
+        self._wave_file = open("texts/waveTexts/WaveGenerator2.txt", "r")
 
-    def getWave(self) -> None:
-        self.game.set_state(GameState.SPAWNING)
-        self.currentMonster = 1
-        wave_line = self.waveFile.readline()
+    def _getWave(self) -> None:
+        self._game.set_state(GameState.SPAWNING)
+        self._curr_monster = 1
+        wave_line = self._wave_file.readline()
         if len(wave_line) == 0:
             return
-        self.currentWave = tuple(map(int, wave_line.split()))
-        self.maxTicks = self.currentWave[0]
+        self._current_wave = tuple(map(int, wave_line.split()))
+        self._max_ticks = self._current_wave[0]
 
-    def findSpawn(self) -> grid.Loc:
-        for x in range(self.game.grid_dim):
-            if block.is_path(self.game.grid[x][0]):
-                self.gridx = x
-                spawnx = x * self.game.block_dim + self.game.block_dim / 2
+    def _findSpawn(self) -> grid.Loc:
+        for x in range(self._game.grid_dim):
+            if block.is_path(self._game.grid[x][0]):
+                self._gridx = x
+                spawnx = x * self._game.block_dim + self._game.block_dim / 2
                 spawny = 0
                 return grid.Loc(spawnx, spawny)
 
-        for y in range(self.game.grid_dim):
-            if block.is_path(self.game.grid[0][y]):
-                self.gridy = y
+        for y in range(self._game.grid_dim):
+            if block.is_path(self._game.grid[0][y]):
+                self._gridy = y
                 spawnx = 0
-                spawny = y * self.game.block_dim + self.game.block_dim / 2
+                spawny = y * self._game.block_dim + self._game.block_dim / 2
                 return grid.Loc(spawnx, spawny)
 
         raise ValueError('Some invalid config of blocks')
 
-    def move(self):
-        pathList.append(self.direction)
-        if self.direction == 1:
-            self.gridx += 1
-        if self.direction == 2:
-            self.gridx -= 1
-        if self.direction == 3:
-            self.gridy += 1
-        if self.direction == 4:
-            self.gridy -= 1
-        self.decideMove()
+    def _move(self):
+        pathList.append(self._direction)
+        if self._direction == 1:
+            self._gridx += 1
+        if self._direction == 2:
+            self._gridx -= 1
+        if self._direction == 3:
+            self._gridy += 1
+        if self._direction == 4:
+            self._gridy -= 1
+        self._decideMove()
 
-    def decideMove(self):
+    def _decideMove(self):
         if (
-            self.direction != 2
-            and self.gridx < self.game.grid_dim - 1
-            and self.gridy >= 0
-            and self.gridy <= self.game.grid_dim - 1
+            self._direction != 2
+            and self._gridx < self._game.grid_dim - 1
+            and self._gridy >= 0
+            and self._gridy <= self._game.grid_dim - 1
         ):
-            if block.is_path(self.game.grid[self.gridx + 1][self.gridy]):
-                self.direction = 1
-                self.move()
+            if block.is_path(self._game.grid[self._gridx + 1][self._gridy]):
+                self._direction = 1
+                self._move()
                 return
 
         if (
-            self.direction != 1
-            and self.gridx > 0
-            and self.gridy >= 0
-            and self.gridy <= self.game.grid_dim - 1
+            self._direction != 1
+            and self._gridx > 0
+            and self._gridy >= 0
+            and self._gridy <= self._game.grid_dim - 1
         ):
-            if block.is_path(self.game.grid[self.gridx - 1][self.gridy]):
-                self.direction = 2
-                self.move()
+            if block.is_path(self._game.grid[self._gridx - 1][self._gridy]):
+                self._direction = 2
+                self._move()
                 return
 
         if (
-            self.direction != 4
-            and self.gridy < self.game.grid_dim - 1
-            and self.gridx >= 0
-            and self.gridx <= self.game.grid_dim - 1
+            self._direction != 4
+            and self._gridy < self._game.grid_dim - 1
+            and self._gridx >= 0
+            and self._gridx <= self._game.grid_dim - 1
         ):
-            if block.is_path(self.game.grid[self.gridx][self.gridy + 1]):
-                self.direction = 3
-                self.move()
+            if block.is_path(self._game.grid[self._gridx][self._gridy + 1]):
+                self._direction = 3
+                self._move()
                 return
 
         if (
-            self.direction != 3
-            and self.gridy > 0
-            and self.gridx >= 0
-            and self.gridx <= self.game.grid_dim - 1
+            self._direction != 3
+            and self._gridy > 0
+            and self._gridx >= 0
+            and self._gridx <= self._game.grid_dim - 1
         ):
-            if block.is_path(self.game.grid[self.gridx][self.gridy - 1]):
-                self.direction = 4
-                self.move()
+            if block.is_path(self._game.grid[self._gridx][self._gridy - 1]):
+                self._direction = 4
+                self._move()
                 return
 
         pathList.append(5)
 
-    def spawnMonster(self):
-        monster_idx = self.currentWave[self.currentMonster]
+    def _spawnMonster(self):
+        monster_idx = self._current_wave[self._curr_monster]
 
-        self.game.monsters.append(
-            monster_factory(monster_idx, self.spawn, self.game.block_dim)
+        self._game.monsters.append(
+            monster_factory(monster_idx, self.spawn, self._game.block_dim)
         )
-        self.currentMonster = self.currentMonster + 1
+        self._curr_monster = self._curr_monster + 1
 
     def update(self):
-        if self.game.state == GameState.WAIT_FOR_SPAWN:
-            self.getWave()
-        elif self.game.state == GameState.SPAWNING:
-            if self.currentMonster == len(self.currentWave):
-                self.game.set_state(GameState.IDLE)
+        if self._game.state == GameState.WAIT_FOR_SPAWN:
+            self._getWave()
+        elif self._game.state == GameState.SPAWNING:
+            if self._curr_monster == len(self._current_wave):
+                self._game.set_state(GameState.IDLE)
                 return
-            self.ticks = self.ticks + 1
-            if self.ticks == self.maxTicks:
-                self.ticks = 0
-                self.spawnMonster()
+            self._ticks = self._ticks + 1
+            if self._ticks == self._max_ticks:
+                self._ticks = 0
+                self._spawnMonster()
 
-    def paint(self, canvas):
+    def paint(self, canvas: tk.Canvas):
         pass
 
 
