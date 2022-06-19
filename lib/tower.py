@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from PIL import ImageTk
 
@@ -155,6 +155,12 @@ class ShootingTower(Tower):
     @abstractmethod
     def prepareShot(self) -> None:
         ...
+
+
+@runtime_checkable
+class ITargetingTower(Protocol):
+    targetList: int = 0
+    stickyTarget: bool
 
 
 towers = {

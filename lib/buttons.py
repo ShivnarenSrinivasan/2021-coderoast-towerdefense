@@ -7,6 +7,9 @@ from . import (
     grid,
     tower,
 )
+from .tower import (
+    ITowerMap,
+)
 
 
 class BaseButton(Protocol):
@@ -55,3 +58,40 @@ def is_within_bounds(btn: BaseButton, point: grid.Point) -> bool:
 
 def make_coords(x1: int, y1: int, x2: int, y2: int) -> tuple[grid.Point, grid.Point]:
     return grid.Point(x1, y1), grid.Point(x2, y2)
+
+
+class TargetButton(Button):
+    def __init__(self, coord1: grid.Point, coord2: grid.Point, myType):
+        super().__init__(coord1, coord2)
+        self.type = myType
+
+    def press(self, tower_map: ITowerMap):
+        if tower_map.displayed is not None:
+            tower_map.displayed.targetList = self.type
+
+
+class StickyButton(Button):
+    def press(self, tower_map: ITowerMap):
+        display_tower = tower_map.displayed
+        if display_tower is None:
+            return None
+
+        if not display_tower.stickyTarget:
+            display_tower.stickyTarget = True
+        else:
+            display_tower.stickyTarget = False
+
+
+class SellButton(Button):
+    def press(self, tower_map: ITowerMap) -> None:
+        displayTower = tower_map.displayed
+        if displayTower is None:
+            return None
+        tower_map.remove(displayTower)
+        tower_map.displayed = None
+        return None
+
+
+class UpgradeButton(Button):
+    def press(self, tower_map: ITowerMap) -> None:
+        return None

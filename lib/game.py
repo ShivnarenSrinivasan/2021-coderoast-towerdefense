@@ -1,5 +1,6 @@
 import tkinter as tk
 from collections.abc import Iterable
+from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Optional
 from .protocols import GameObject
@@ -9,6 +10,12 @@ class GameState(Enum):
     IDLE = auto()
     WAIT_FOR_SPAWN = auto()
     SPAWNING = auto()
+
+
+@dataclass
+class Stats:
+    money: int
+    health: int
 
 
 class Game:

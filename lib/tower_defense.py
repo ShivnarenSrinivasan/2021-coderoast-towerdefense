@@ -1,16 +1,12 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 import math
-import itertools as it
 import random
-from collections.abc import (
-    Iterable,
-    Sequence,
-)
+from collections.abc import Sequence
 from functools import cached_property
 
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import ImageTk
 
 from . import (
     buttons,
@@ -24,14 +20,12 @@ from . import (
     tower,
 )
 from .block import Block
-from .buttons import Button
-from .display import Value
 from .grid import Grid
 from .maps import Dimension
 from .monster import IMonster
 from .tower import ITowerMap
 
-from .game import Game, GameState
+from .game import Game, GameState, Stats
 
 blockSize = Dimension(20)  # pixels wide of each block
 
@@ -40,7 +34,6 @@ monsters: list[IMonster] = []
 
 projectiles: list[Projectile] = []
 health = 100
-money = 5000000000
 
 
 class TowerDefenseGame(Game):
@@ -60,10 +53,12 @@ class TowerDefenseGame(Game):
         self.grid_dim = grid_dim
         self.block_dim = block_dim
         self.state = GameState.IDLE
-        self.displayboard = display.Displayboard(self.frame, health, money)
+        self.stats = Stats(1000, 100)
+
+        self.displayboard = display.Displayboard(self.frame, self.stats)
         tower_map = tower.TowerMap()
-        infoboard = Infoboard(self.frame, tower_map)
-        self.towerbox = Towerbox(self.frame, infoboard)
+        infoboard = display.Infoboard(self.frame, tower_map)
+        self.towerbox = display.Towerbox(self.frame, infoboard, tower_map)
         self.grid = self._load_grid(map_name)
 
         self.add_objects(
@@ -88,7 +83,7 @@ class TowerDefenseGame(Game):
 
     def update(self) -> None:
         super().update()
-        self.displayboard.update(health, money)
+        self.displayboard.update(self.stats)
         for p in projectiles:
             p.update()
 
@@ -237,210 +232,12 @@ def can_spawn(game: TowerDefenseGame, monsters_: Sequence[IMonster]) -> bool:
     return game.is_idle and len(monsters_) == 0
 
 
-class TargetButton(buttons.Button):
-    def __init__(self, coord1: grid.Point, coord2: grid.Point, myType):
-        super().__init__(coord1, coord2)
-        self.type = myType
-
-    def press(self, tower_map: ITowerMap):
-        if tower_map.displayed is not None:
-            tower_map.displayed.targetList = self.type
-
-
-class StickyButton(buttons.Button):
-    def press(self, tower_map: ITowerMap):
-        display_tower = tower_map.displayed
-        if display_tower is None:
-            return None
-
-        if not display_tower.stickyTarget:
-            display_tower.stickyTarget = True
-        else:
-            display_tower.stickyTarget = False
-
-
-class SellButton(buttons.Button):
-    def press(self, tower_map: ITowerMap):
-        displayTower = tower_map.displayed
-        if displayTower is None:
-            return None
-        tower_map.remove(displayTower)
-        tower_map.displayed = None
-
-
-class UpgradeButton(buttons.Button):
-    def press(self, tower_map: ITowerMap):
-        global money
-        displayTower = tower_map.displayed
-        assert displayTower is not None and displayTower.upgradeCost is not None
-        if money >= displayTower.upgradeCost:
-            money -= displayTower.upgradeCost
-            displayTower.upgrade()
-
-
-def _gen_draw_info_buttons(canvas: tk.Canvas) -> Iterable[Button]:
-    def _target_btns(canvas: tk.Canvas) -> Iterable[Button]:
-        _c1, _c2 = (26, 30), (35, 39)
-
-        def make_btn(
-            c1: tuple[int, int], c2: tuple[int, int], btn_type: int
-        ) -> TargetButton:
-            return TargetButton(*buttons.make_coords(*c1, *c2), btn_type)
-
-        buttons_and_text: list[tuple[Button, Value]] = [
-            (make_btn(_c1, _c2, 0), Value((37, 28), '> Health')),
-            (make_btn(_c1, _c2, 1), Value((37, 48), '< Health')),
-            (make_btn((92, 50), (101, 59), 2), Value((103, 48), "> Distance")),
-            (make_btn((92, 30), (101, 39), 2), Value((103, 28), "< Distance")),
-        ]
-
-        display.create_texts(
-            canvas,
-            buttons_and_text,
-            font=('times', 12),
-            fill='white',
-            anchor=tk.NW,
-        )
-
-        return (item[0] for item in buttons_and_text)
-
-    btns = _target_btns(canvas)
-    return btns
-
-
-def _gen_draw_misc_buttons(
-    canvas: tk.Canvas, tower_: TargetingTower
-) -> Iterable[Button]:
-    BtnVal = list[tuple[Button, Value | None]]
-    btn_text: BtnVal = [
-        (StickyButton(*buttons.make_coords(10, 40, 19, 49)), None),
-        (
-            SellButton(*buttons.make_coords(5, 145, 78, 168)),
-            Value((28, 146), 'Sell'),
-        ),
-    ]
-
-    # NOTE: This section is quite confusing, see if it can be simplified
-    btn_text1: BtnVal
-    if tower_.upgradeCost:
-        btn_text1 = [(UpgradeButton(*buttons.make_coords(82, 145, 155, 168)), None)]
-        canvas.create_text(
-            (120, 157),
-            text="Upgrade: " + str(tower_.upgradeCost),
-            font=("times", 12),
-            fill="light green",
-            anchor=tk.CENTER,
-        )
-    else:
-        btn_text1 = []
-
-    btn_texts_ = tuple(it.chain(btn_text, btn_text1))
-    # --------------------------
-
-    display.create_texts(
-        canvas,
-        btn_texts_,
-        font=("times", 22),
-        fill="light green",
-        anchor=tk.NW,
-    )
-
-    return (item[0] for item in btn_texts_)
-
-
-class Infoboard:
-    def __init__(self, frame: tk.Frame, tower_map: ITowerMap):
-        self.canvas = tk.Canvas(
-            master=frame, width=162, height=174, bg="gray", highlightthickness=0
-        )
-        self.tower_map = tower_map
-        self.canvas.grid(row=0, column=1)
-        self.image = ImageTk.PhotoImage(Image.open("images/infoBoard.png"))
-        self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
-        self.currentButtons: list[buttons.Button] = []
-        self.towerImage: ImageTk.PhotoImage | None
-        self.text: str | None
-
-    def buttonsCheck(self, point: grid.Point) -> None:
-        for btn in self.currentButtons:
-            if btn.can_press(point):
-                btn.press(self.tower_map)
-                self.displaySpecific()
-                return None
-
-    def displaySpecific(self):
-        self.canvas.delete(tk.ALL)  # clear the screen
-        self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
-        self.currentButtons = []
-        displayTower = self.tower_map.displayed
-        if displayTower is None:
-            return
-
-        self.towerImage = tower.load_img(displayTower)
-        self.canvas.create_text(80, 75, text=displayTower.name, font=("times", 20))
-        self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
-
-        if not isinstance(displayTower, TargetingTower):
-            return None
-
-        self.currentButtons.extend(_gen_draw_info_buttons(self.canvas))
-
-        self.currentButtons.extend(_gen_draw_misc_buttons(self.canvas, displayTower))
-
-        self.currentButtons[displayTower.targetList].paint(self.canvas)
-        if displayTower.stickyTarget:
-            self.currentButtons[4].paint(self.canvas)
-
-    def displayGeneric(self, selectedTower: str):
-        self.currentButtons = []
-        if selectedTower == "<None>":
-            self.text = None
-            self.towerImage = None
-        else:
-            self.text = selectedTower + " cost: " + str(tower.cost(selectedTower))
-            self.canvas.create_text(80, 75, text=self.text)
-            self.towerImage = tower.load_img(selectedTower)
-        self.canvas.delete(tk.ALL)  # clear the screen
-        self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
-        self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
-
-
-class Towerbox:
-    def __init__(self, frame: tk.Frame, infoboard: Infoboard):
-        self.infoboard = infoboard
-        self.box = tk.Listbox(
-            master=frame,
-            selectmode="SINGLE",
-            font=("times", 18),
-            height=18,
-            width=13,
-            bg="gray",
-            fg="dark blue",
-            bd=1,
-            highlightthickness=0,
-        )
-        self.selected: str = '<None>'
-        self.box.insert(tk.END, "<None>")
-        for i in tower.towers:
-            self.box.insert(tk.END, i)
-        for _ in range(50):
-            self.box.insert(tk.END, "<None>")
-        self.box.grid(row=1, column=1, rowspan=2)
-        self.box.bind("<<ListboxSelect>>", self.onselect)
-
-    @property
-    def is_selected(self) -> bool:
-        return self.selected != '<None>'
-
-    def onselect(self, _):
-        self.selected = str(self.box.get(self.box.curselection()))
-        self.infoboard.tower_map.displayed = None
-        self.infoboard.displayGeneric(self.selected)
-
-
 class Mouse:
     def __init__(
-        self, game: TowerDefenseGame, infoboard: Infoboard, towerbox: Towerbox
+        self,
+        game: TowerDefenseGame,
+        infoboard: display.Infoboard,
+        towerbox: display.Towerbox,
     ):
         self.game = game
         self.infoboard = infoboard
@@ -517,9 +314,11 @@ class Mouse:
                 self.infoboard.displaySpecific()
         else:
             if self.towerbox.is_selected and can_add_tower(
-                block_, self.towerbox.selected
+                block_, self.towerbox.selected, self.game.stats.money
             ):
-                add_tower(tower_map, block_, self.towerbox.selected)
+                self.game.stats.money -= add_tower(
+                    tower_map, block_, self.towerbox.selected
+                )
 
     def _out_update(self) -> None:
         pos = grid.Point(self.x - self.xoffset, self.y - self.yoffset)
@@ -533,7 +332,9 @@ class Mouse:
         ):
             self.game.set_state(GameState.WAIT_FOR_SPAWN)
         if self.pressed:
-            self.infoboard.buttonsCheck(pos)
+            self.game.stats.money -= self.infoboard.buttonsCheck(
+                pos, self.game.stats.money
+            )
 
     def paint(self, canvas: tk.Canvas) -> None:
         if not self._in_grid():
@@ -820,7 +621,7 @@ def select_tower(tower_map: ITowerMap, grid_: grid.Point) -> None:
 
 
 # TODO: Pass tower instance as param to both, instead of string.
-def can_add_tower(block_: Block, tower_: str) -> bool:
+def can_add_tower(block_: Block, tower_: str, money: int) -> bool:
     return all([block.is_empty(block_), can_buy_tower(money, tower_)])
 
 
@@ -828,10 +629,9 @@ def can_buy_tower(money_: int, tower_: str) -> bool:
     return money_ >= tower.cost(tower_)
 
 
-def add_tower(tower_map: ITowerMap, block_: Block, tower_: str) -> None:
-    global money
+def add_tower(tower_map: ITowerMap, block_: Block, tower_: str) -> int:
     tower_map[block_.grid_loc] = tower_factory(tower_, block_.loc, block_.grid_loc)
-    money -= tower.cost(tower_)
+    return tower.cost(tower_)
 
 
 class Monster:
@@ -855,6 +655,7 @@ class Monster:
 
     def update(self):
         if self.health <= 0:
+            # TODO: Handle money increase when monsters killed
             self.killed()
         self.move()
 
@@ -897,8 +698,6 @@ class Monster:
         return grid.Loc(x, y)
 
     def killed(self):
-        global money
-        money += self.value
         self.die()
 
     def gotThrough(self):
@@ -952,8 +751,6 @@ class Monster2(Monster):
         self.axis = blockSize / 2
 
     def killed(self):
-        global money
-        money += self.value
         monsters.append(
             Monster1(
                 self.distanceTravelled + blockSize * (0.5 - random.random()), self.spawn
@@ -973,8 +770,6 @@ class AlexMonster(Monster):
         self.axis = blockSize
 
     def killed(self):
-        global money
-        money += self.value
         for _ in range(5):
             monsters.append(
                 Monster2(
@@ -996,8 +791,6 @@ class BenMonster(Monster):
         self.axis = blockSize / 2
 
     def killed(self):
-        global money
-        money += self.value
         for _ in range(2):
             monsters.append(
                 LeoMonster(
