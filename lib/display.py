@@ -1,12 +1,10 @@
 import tkinter as tk
 from typing import (
     NamedTuple,
-    TypedDict,
 )
 
 
 from . import buttons
-from ._type_aliases import _Anchor
 
 
 class Displayboard:
@@ -55,10 +53,3 @@ class Moneybar:
 class Value(NamedTuple):
     coord: tuple[float, float]
     text: str
-
-
-class Text(TypedDict):
-    text: str
-    font: tuple[str, int]
-    fill: str
-    anchor: _Anchor

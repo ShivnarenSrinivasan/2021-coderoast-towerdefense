@@ -24,10 +24,7 @@ from . import (
 )
 from .block import Block
 from .buttons import Button
-from .display import (
-    Text,
-    Value,
-)
+from .display import Value
 from .grid import Grid
 from .maps import Dimension
 from .monster import IMonster
@@ -333,12 +330,10 @@ class Infoboard:
                 for _, val in buttons_and_text:
                     canvas.create_text(
                         val.coord,
-                        **Text(
-                            text=val.text,
-                            font=('times', 12),
-                            fill='white',
-                            anchor=tk.NW,
-                        ),
+                        text=val.text,
+                        font=('times', 12),
+                        fill='white',
+                        anchor=tk.NW,
                     )
 
                 return (item[0] for item in buttons_and_text)
