@@ -95,6 +95,17 @@ class TowerMap(GameObject):
         raise KeyError(f'No such tower {tower} found.')
 
 
+@runtime_checkable
+class ITower(Protocol):
+    targetList: int = 0
+    stickyTarget: bool
+    name: str
+    upgradeCost: int | None
+
+    def upgrade(self) -> None:
+        ...
+
+
 class Tower(ABC):
     def __init__(self, x: float, y: float, gridx: int, gridy: int):
         self.level: int = 1
@@ -141,47 +152,6 @@ class Tower(ABC):
         canvas.create_image(self._x, self._y, image=self.image, anchor=tk.CENTER)
         for proj in self._projectiles:
             proj.paint(canvas)
-
-
-def load_img(tower: ITower | Tower | str) -> ImageTk.PhotoImage:
-    match tower:
-        case Tower():
-            img_fp = Path(f'tower/{tower.__class__.__name__}/{tower.level}.png')
-        case str():
-            img_fp = Path(f'tower/{towers[tower]}/1.png')
-        case _:
-            raise ValueError(f"Unhandled type {type(tower)}")
-
-    return io.load_img_tk(img_fp)
-
-
-@runtime_checkable
-class ITower(Protocol):
-    targetList: int = 0
-    stickyTarget: bool
-    name: str
-    upgradeCost: int | None
-
-    def upgrade(self) -> None:
-        ...
-
-
-towers = {
-    "Arrow Shooter": "ArrowShooterTower",
-    "Bullet Shooter": "BulletShooterTower",
-    "Tack Tower": "TackTower",
-    "Power Tower": "PowerTower",
-}
-
-
-def cost(tower: str) -> int:
-    _costs = {
-        "Arrow Shooter": 150,
-        "Bullet Shooter": 150,
-        "Tack Tower": 150,
-        "Power Tower": 200,
-    }
-    return _costs[tower]
 
 
 class TargetingTower(Tower):
@@ -311,7 +281,12 @@ class BulletShooterTower(TargetingTower):
     def _shoot(self):
         self._add(
             self._projectile_type(
-                self._x, self._y, self._damage, self._speed, self._target, self._block_dim
+                self._x,
+                self._y,
+                self._damage,
+                self._speed,
+                self._target,
+                self._block_dim,
             )
         )
 
@@ -398,3 +373,33 @@ def tower_factory(
     }
     tower_type = towers_[tower_]
     return tower_type(loc.x, loc.y, grid_.x, grid_.y, block_dim, monsters)
+
+
+def load_img(tower: ITower | Tower | str) -> ImageTk.PhotoImage:
+    match tower:
+        case Tower():
+            img_fp = Path(f'tower/{tower.__class__.__name__}/{tower.level}.png')
+        case str():
+            img_fp = Path(f'tower/{towers[tower]}/1.png')
+        case _:
+            raise ValueError(f"Unhandled type {type(tower)}")
+
+    return io.load_img_tk(img_fp)
+
+
+towers = {
+    "Arrow Shooter": "ArrowShooterTower",
+    "Bullet Shooter": "BulletShooterTower",
+    "Tack Tower": "TackTower",
+    "Power Tower": "PowerTower",
+}
+
+
+def cost(tower: str) -> int:
+    _costs = {
+        "Arrow Shooter": 150,
+        "Bullet Shooter": 150,
+        "Tack Tower": 150,
+        "Power Tower": 200,
+    }
+    return _costs[tower]
