@@ -23,6 +23,7 @@ from . import (
     tower,
 )
 from .block import Block
+from .buttons import Button
 from .grid import Grid
 from .maps import Dimension
 from .monster import IMonster
@@ -322,7 +323,7 @@ class Infoboard:
                 fill: str
                 anchor: _Anchor
 
-            def _target_btns(canvas: tk.Canvas) -> Iterable[buttons.Button]:
+            def _target_btns(canvas: tk.Canvas) -> Iterable[Button]:
                 _c1, _c2 = (26, 30), (35, 39)
 
                 def make_btn(
@@ -330,12 +331,13 @@ class Infoboard:
                 ) -> TargetButton:
                     return TargetButton(*buttons.make_coords(*c1, *c2), btn_type)
 
-                buttons_and_text: list[tuple[TargetButton, Value]] = [
+                buttons_and_text: list[tuple[Button, Value]] = [
                     (make_btn(_c1, _c2, 0), Value((37, 28), '> Health')),
                     (make_btn(_c1, _c2, 1), Value((37, 48), '< Health')),
                     (make_btn((92, 50), (101, 59), 2), Value((103, 48), "> Distance")),
                     (make_btn((92, 30), (101, 39), 2), Value((103, 28), "< Distance")),
                 ]
+
                 for _, val in buttons_and_text:
                     canvas.create_text(
                         val.coord,
@@ -351,40 +353,38 @@ class Infoboard:
 
             self.currentButtons.extend(_target_btns(canvas))
 
-        if issubclass(displayTower.__class__, TargetingTower):
-            _draw_info_buttons(self.canvas)
+        if not isinstance(displayTower, TargetingTower):
+            return None
 
-            self.currentButtons.append(
-                StickyButton(*buttons.make_coords(10, 40, 19, 49))
-            )
-            self.currentButtons.append(
-                SellButton(*buttons.make_coords(5, 145, 78, 168))
-            )
-            if displayTower.upgradeCost:
-                self.currentButtons.append(
-                    UpgradeButton(*buttons.make_coords(82, 145, 155, 168))
-                )
-                self.canvas.create_text(
-                    120,
-                    157,
-                    text="Upgrade: " + str(displayTower.upgradeCost),
-                    font=("times", 12),
-                    fill="light green",
-                    anchor=tk.CENTER,
-                )
+        _draw_info_buttons(self.canvas)
 
+        self.currentButtons.append(StickyButton(*buttons.make_coords(10, 40, 19, 49)))
+        self.currentButtons.append(SellButton(*buttons.make_coords(5, 145, 78, 168)))
+        if displayTower.upgradeCost:
+            self.currentButtons.append(
+                UpgradeButton(*buttons.make_coords(82, 145, 155, 168))
+            )
             self.canvas.create_text(
-                28,
-                146,
-                text="Sell",
-                font=("times", 22),
+                120,
+                157,
+                text="Upgrade: " + str(displayTower.upgradeCost),
+                font=("times", 12),
                 fill="light green",
-                anchor=tk.NW,
+                anchor=tk.CENTER,
             )
 
-            self.currentButtons[displayTower.targetList].paint(self.canvas)
-            if displayTower.stickyTarget:
-                self.currentButtons[4].paint(self.canvas)
+        self.canvas.create_text(
+            28,
+            146,
+            text="Sell",
+            font=("times", 22),
+            fill="light green",
+            anchor=tk.NW,
+        )
+
+        self.currentButtons[displayTower.targetList].paint(self.canvas)
+        if displayTower.stickyTarget:
+            self.currentButtons[4].paint(self.canvas)
 
     def displayGeneric(self, selectedTower: str):
         self.currentButtons = []
