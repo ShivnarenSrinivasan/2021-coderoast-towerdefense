@@ -1,19 +1,13 @@
 import tkinter as tk
 from typing import Protocol
 
-from .grid import Loc
-
 
 class Movable(Protocol):
-    distanceTravelled: float
+    x: float
+    y: float
+    distance_travelled: float
     speed: float
     movement: float
-
-    def move(self) -> None:
-        ...
-
-    def positionFormula(self) -> Loc:
-        ...
 
 
 class GameObject(Protocol):

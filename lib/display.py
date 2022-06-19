@@ -231,7 +231,7 @@ class Towerbox:
         )
         self.selected: str = '<None>'
         self.box.insert(tk.END, "<None>")
-        for i in tower.towers:
+        for i in tower.TOWERS:
             self.box.insert(tk.END, i)
         for _ in range(50):
             self.box.insert(tk.END, "<None>")

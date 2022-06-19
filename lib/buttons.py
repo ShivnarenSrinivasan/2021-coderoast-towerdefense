@@ -61,9 +61,9 @@ def make_coords(x1: int, y1: int, x2: int, y2: int) -> tuple[grid.Point, grid.Po
 
 
 class TargetButton(Button):
-    def __init__(self, coord1: grid.Point, coord2: grid.Point, myType):
+    def __init__(self, coord1: grid.Point, coord2: grid.Point, btn_type: int):
         super().__init__(coord1, coord2)
-        self.type = myType
+        self.type = btn_type
 
     def press(self, tower_map: ITowerMap):
         if tower_map.displayed is not None:

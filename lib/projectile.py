@@ -25,7 +25,7 @@ class IProjectile(Protocol):
         ...
 
 
-class Projectile(ABC):
+class _Projectile(ABC):
     def __init__(self, x, y, damage, speed, block_dim: Dimension):
         self.hit = False
         self._x = x
@@ -64,11 +64,11 @@ class Projectile(ABC):
         ...
 
 
-class TrackingBullet(Projectile):
+class TrackingBullet(_Projectile):
     def __init__(self, x, y, damage, speed, target, block_dim: Dimension):
         super().__init__(x, y, damage, speed, block_dim)
         self._target = target
-        self._image = load_img('bullet')
+        self._image = _load_img('bullet')
 
     def _move(self):
         assert self._target
@@ -93,7 +93,7 @@ class PowerShot(TrackingBullet):
     def __init__(self, x, y, damage, speed, target, slow, block_dim: Dimension):
         super().__init__(x, y, damage, speed, target, block_dim)
         self._slow = slow
-        self._image = load_img('powerShot')
+        self._image = _load_img('powerShot')
 
     def _hit_monster(self):
         assert self._target
@@ -103,13 +103,13 @@ class PowerShot(TrackingBullet):
         self.should_remove = True
 
 
-class AngledProjectile(Projectile):
+class AngledProjectile(_Projectile):
     def __init__(self, x, y, damage, speed, angle, givenRange, block_dim: Dimension):
         super().__init__(x, y, damage, speed, block_dim)
         self._x_change = speed * math.cos(angle)
         self._y_change = speed * math.sin(-angle)
         self._range = givenRange
-        self._image = load_arrow_img(angle)
+        self._image = _load_arrow_img(angle)
         self._target = None
         self._speed = speed
         self._distance = 0
@@ -138,11 +138,11 @@ class AngledProjectile(Projectile):
             self.should_remove = True
 
 
-def load_img(projectile: str) -> ImageTk.PhotoImage:
+def _load_img(projectile: str) -> ImageTk.PhotoImage:
     return io.load_img_tk(_img_path(projectile))
 
 
-def load_arrow_img(angle: float) -> ImageTk.PhotoImage:
+def _load_arrow_img(angle: float) -> ImageTk.PhotoImage:
     img = io.load_img(_img_path('arrow'))
     return ImageTk.PhotoImage(img.rotate(degrees(angle)))
 

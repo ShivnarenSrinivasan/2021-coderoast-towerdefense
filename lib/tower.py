@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Protocol, runtime_checkable
+from typing import Final, Protocol, runtime_checkable
 
 from PIL import ImageTk
 
@@ -53,13 +53,13 @@ class ITowerMap(GameObject, Protocol):
 
 @dataclass(order=False)
 class TowerMap(GameObject):
-    _towers: dict[grid.Point, Tower] = field(default_factory=dict)
-    displayed: Tower | None = None
+    _towers: dict[grid.Point, _Tower] = field(default_factory=dict)
+    displayed: _Tower | None = None
 
     def __iter__(self) -> Iterable[grid.Point]:
         yield from self._towers
 
-    def __getitem__(self, p: grid.Point) -> Tower:
+    def __getitem__(self, p: grid.Point) -> _Tower:
         return self._towers[p]
 
     def __contains__(self, p: grid.Point) -> bool:
@@ -68,7 +68,7 @@ class TowerMap(GameObject):
     def __len__(self) -> int:
         return len(self._towers)
 
-    def __setitem__(self, p: grid.Point, tower: Tower) -> None:
+    def __setitem__(self, p: grid.Point, tower: _Tower) -> None:
         if p in self._towers:
             raise KeyError(f'Point {p} already taken!')
         self._towers[p] = tower
@@ -88,7 +88,7 @@ class TowerMap(GameObject):
         if self.displayed is not None:
             self.displayed.paintSelect(canvas)
 
-    def remove(self, tower: Tower) -> None:
+    def remove(self, tower: _Tower) -> None:
         for point, _tower in self._towers.items():
             if _tower == tower:
                 self._towers.pop(point)
@@ -107,7 +107,7 @@ class ITower(Protocol):
         ...
 
 
-class Tower(ABC):
+class _Tower(ABC):
     def __init__(self, x: float, y: float, gridx: int, gridy: int):
         self.level: int = 1
         self._range: int
@@ -135,7 +135,7 @@ class Tower(ABC):
         self.image = load_img(self)
         self.nextLevel()
 
-    def sold(self, tower_map: dict[grid.Point, Tower]) -> None:
+    def sold(self, tower_map: dict[grid.Point, _Tower]) -> None:
         point = grid.Point(self._gridx, self.gridy)
         tower_map.pop(point)
 
@@ -155,7 +155,7 @@ class Tower(ABC):
             proj.paint(canvas)
 
 
-class TargetingTower(Tower):
+class _TargetingTower(_Tower):
     def __init__(
         self,
         x: float,
@@ -224,7 +224,7 @@ class TargetingTower(Tower):
         self._projectiles.remove(proj)
 
 
-class ArrowShooterTower(TargetingTower):
+class ArrowShooterTower(_TargetingTower):
     def __init__(
         self, x, y, gridx, gridy, block_dim: Dimension, monsters: list[IMonster]
     ):
@@ -266,7 +266,7 @@ class ArrowShooterTower(TargetingTower):
         )
 
 
-class BulletShooterTower(TargetingTower):
+class BulletShooterTower(_TargetingTower):
     def __init__(
         self, x, y, gridx, gridy, block_dim: Dimension, monsters: list[IMonster]
     ):
@@ -295,7 +295,7 @@ class BulletShooterTower(TargetingTower):
         ...
 
 
-class PowerTower(TargetingTower):
+class PowerTower(_TargetingTower):
     def __init__(
         self, x, y, gridx, gridy, block_dim: Dimension, monsters: list[IMonster]
     ):
@@ -326,7 +326,7 @@ class PowerTower(TargetingTower):
         ...
 
 
-class TackTower(TargetingTower):
+class TackTower(_TargetingTower):
     def __init__(
         self, x, y, gridx, gridy, block_dim: Dimension, monsters: list[IMonster]
     ):
@@ -365,7 +365,7 @@ def tower_factory(
     grid_: grid.Point,
     block_dim: Dimension,
     monsters: list[IMonster],
-) -> Tower:
+) -> _Tower:
     towers_ = {
         "Arrow Shooter": ArrowShooterTower,
         "Bullet Shooter": BulletShooterTower,
@@ -376,19 +376,19 @@ def tower_factory(
     return tower_type(loc.x, loc.y, grid_.x, grid_.y, block_dim, monsters)
 
 
-def load_img(tower: ITower | Tower | str) -> ImageTk.PhotoImage:
+def load_img(tower: ITower | _Tower | str) -> ImageTk.PhotoImage:
     match tower:
-        case Tower():
+        case _Tower():
             img_fp = Path(f'tower/{tower.__class__.__name__}/{tower.level}.png')
         case str():
-            img_fp = Path(f'tower/{_towers[tower]}/1.png')
+            img_fp = Path(f'tower/{TOWERS[tower]}/1.png')
         case _:
             raise ValueError(f"Unhandled type {type(tower)}")
 
     return io.load_img_tk(img_fp)
 
 
-_towers = {
+TOWERS: Final = {
     "Arrow Shooter": "ArrowShooterTower",
     "Bullet Shooter": "BulletShooterTower",
     "Tack Tower": "TackTower",

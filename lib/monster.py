@@ -20,17 +20,12 @@ from .protocols import (
 @runtime_checkable
 class IMonster(GameObject, Movable, Protocol):
     health: int
-    x: float
-    y: float
     value: int
     tick: int
     maxTick: int
     got_through: bool
     damage: int
     children: list[IMonster]
-
-    def die(self) -> None:
-        ...
 
 
 def gen_list(monsters: list[IMonster]) -> list[list[IMonster]]:
@@ -48,7 +43,7 @@ def gen_list(monsters: list[IMonster]) -> list[list[IMonster]]:
 def sort_distance(
     monsters: Sequence[IMonster], reverse: bool = False
 ) -> list[IMonster]:
-    return sorted(monsters, key=lambda x: x.distanceTravelled, reverse=reverse)
+    return sorted(monsters, key=lambda x: x.distance_travelled, reverse=reverse)
 
 
 def load_img(monster: IMonster) -> ImageTk.PhotoImage:

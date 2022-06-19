@@ -54,7 +54,7 @@ class TowerDefenseGame(Game):
         self.grid = self._load_grid(map_name)
         self.monsters: list[IMonster] = []
 
-        self.add_objects(
+        self._add_objects(
             [
                 maps.Map(map_name),
                 Wavegenerator(self),
@@ -74,8 +74,8 @@ class TowerDefenseGame(Game):
     def is_idle(self) -> bool:
         return self.state is GameState.IDLE
 
-    def update(self) -> None:
-        super().update()
+    def _update(self) -> None:
+        super()._update()
         self.displayboard.update(self.stats)
 
         for monster_ in self.monsters:
@@ -87,8 +87,8 @@ class TowerDefenseGame(Game):
             if monster_.got_through:
                 self.stats.health -= monster_.damage
 
-    def paint(self) -> None:
-        super().paint()
+    def _paint(self) -> None:
+        super()._paint()
 
         for monster_ in monster.sort_distance(self.monsters):
             monster_.paint(self.canvas)
@@ -109,7 +109,7 @@ class Wavegenerator:
         self._direction = None
         self._gridx = 0
         self._gridy = 0
-        self.spawn = self._findSpawn()
+        self._spawn = self._findSpawn()
         self._decideMove()
         self._ticks = 1
         self._max_ticks = 2
@@ -204,7 +204,7 @@ class Wavegenerator:
         monster_idx = self._current_wave[self._curr_monster]
 
         self._game.monsters.append(
-            monster_factory(monster_idx, self.spawn, self._game.block_dim)
+            monster_factory(monster_idx, self._spawn, self._game.block_dim)
         )
         self._curr_monster = self._curr_monster + 1
 
@@ -238,72 +238,72 @@ class Mouse:
         self.game = game
         self.infoboard = infoboard
         self.towerbox = towerbox
-        self.x = 0
-        self.y = 0
-        self.gridx = 0
-        self.gridy = 0
-        self.xoffset = 0
-        self.yoffset = 0
-        self.pressed = False
+        self._x = 0
+        self._y = 0
+        self._gridx = 0
+        self._gridy = 0
+        self._xoffset = 0
+        self._yoffset = 0
+        self._pressed = False
 
-        game.root.bind("<Button-1>", self.clicked)
-        game.root.bind("<ButtonRelease-1>", self.released)
-        game.root.bind("<Motion>", self.motion)
+        game.root.bind("<Button-1>", self._clicked)
+        game.root.bind("<ButtonRelease-1>", self._released)
+        game.root.bind("<Motion>", self._motion)
 
-        self.image = mouse.load_img('HoveringCanPress')
+        self._image = mouse.load_img('HoveringCanPress')
         self.canNotPressImage = mouse.load_img('HoveringCanNotPress')
 
-    def clicked(self, _):
-        self.pressed = True  # sets a variable
-        self.image = mouse.load_img('Pressed')
+    def _clicked(self, _):
+        self._pressed = True  # sets a variable
+        self._image = mouse.load_img('Pressed')
 
-    def released(self, _):
-        self.pressed = False
-        self.image = mouse.load_img('HoveringCanPress')
+    def _released(self, _):
+        self._pressed = False
+        self._image = mouse.load_img('HoveringCanPress')
 
-    def motion(self, event):
+    def _motion(self, event):
         if event.widget == self.game.canvas:
-            self.xoffset = 0
-            self.yoffset = 0
+            self._xoffset = 0
+            self._yoffset = 0
         elif event.widget == self.infoboard.canvas:
-            self.xoffset = self.game.size
-            self.yoffset = 0
+            self._xoffset = self.game.size
+            self._yoffset = 0
         elif event.widget == self.game.towerbox.box:
-            self.xoffset = self.game.size
-            self.yoffset = 174
+            self._xoffset = self.game.size
+            self._yoffset = 174
         elif event.widget == self.game.displayboard.canvas:
-            self.yoffset = self.game.size
-            self.xoffset = 0
-        self.x = event.x + self.xoffset  # sets the "Mouse" x to the real mouse's x
-        self.y = event.y + self.yoffset  # sets the "Mouse" y to the real mouse's y
-        if self.x < 0:
-            self.x = 0
-        if self.y < 0:
-            self.y = 0
-        self.gridx = int(
-            (self.x - (self.x % self.game.block_dim)) / self.game.block_dim
+            self._yoffset = self.game.size
+            self._xoffset = 0
+        self._x = event.x + self._xoffset  # sets the "Mouse" x to the real mouse's x
+        self._y = event.y + self._yoffset  # sets the "Mouse" y to the real mouse's y
+        if self._x < 0:
+            self._x = 0
+        if self._y < 0:
+            self._y = 0
+        self._gridx = int(
+            (self._x - (self._x % self.game.block_dim)) / self.game.block_dim
         )
-        self.gridy = int(
-            (self.y - (self.y % self.game.block_dim)) / self.game.block_dim
+        self._gridy = int(
+            (self._y - (self._y % self.game.block_dim)) / self.game.block_dim
         )
 
     def update(self) -> None:
-        if self._in_grid() and self.pressed:
+        if self._in_grid() and self._pressed:
             self._in_update()
         else:
             self._out_update()
 
     def _in_grid(self) -> bool:
         return (
-            self.gridx >= 0
-            and self.gridx <= self.game.grid_dim - 1
-            and self.gridy >= 0
-            and self.gridy <= self.game.grid_dim - 1
+            self._gridx >= 0
+            and self._gridx <= self.game.grid_dim - 1
+            and self._gridy >= 0
+            and self._gridy <= self.game.grid_dim - 1
         )
 
     def _in_update(self) -> None:
         tower_map = self.infoboard.tower_map
-        block_ = self.game.grid[self.gridx][self.gridy]
+        block_ = self.game.grid[self._gridx][self._gridy]
         if block_.grid_loc in tower_map:
             if not self.towerbox.is_selected:
                 tower_map.select(block_.grid_loc)
@@ -321,17 +321,17 @@ class Mouse:
                 )
 
     def _out_update(self) -> None:
-        pos = grid.Point(self.x - self.xoffset, self.y - self.yoffset)
+        pos = grid.Point(self._x - self._xoffset, self._y - self._yoffset)
         btn = self.game.displayboard.nextWaveButton
         if all(
             [
-                self.pressed,
+                self._pressed,
                 buttons.is_within_bounds(btn, pos),
                 can_spawn(self.game, self.game.monsters),
             ]
         ):
             self.game.set_state(GameState.WAIT_FOR_SPAWN)
-        if self.pressed:
+        if self._pressed:
             self.game.stats.money += self.infoboard.buttonsCheck(
                 pos, self.game.stats.money
             )
@@ -340,11 +340,11 @@ class Mouse:
         if not self._in_grid():
             return None
 
-        block_ = self.game.grid[self.gridx][self.gridy]
-        img = self.image if block.is_empty(block_) else self.canNotPressImage
+        block_ = self.game.grid[self._gridx][self._gridy]
+        img = self._image if block.is_empty(block_) else self.canNotPressImage
         canvas.create_image(
-            self.gridx * self.game.block_dim,
-            self.gridy * self.game.block_dim,
+            self._gridx * self.game.block_dim,
+            self._gridy * self.game.block_dim,
             image=img,
             anchor=tk.NW,
         )
@@ -379,18 +379,18 @@ def add_tower(
 
 class Monster:
     def __init__(self, distance: float, spawn: grid.Loc, block_dim: Dimension):
-        self.health = 0
-        self.maxHealth = 0
-        self.speed = 0.0
-        self.movement = 0.0
+        self.health: int
+        self._max_health: int
+        self.speed: float
+        self.movement: float
         self.tick = 0
         self.maxTick = 1
-        self.block_dim = block_dim
-        self.distanceTravelled = max(distance, 0.0)
-        self.spawn = spawn
-        self.x, self.y = self.positionFormula()
+        self._block_dim = block_dim
+        self.distance_travelled = max(distance, 0.0)
+        self._spawn = spawn
+        self.x, self.y = self._compute_position()
         self.value = 0
-        self.image = monster.load_img(self)
+        self._image = monster.load_img(self)
         self.axis: int | float
         self.children: list[IMonster] = []
         self.got_through: bool = False
@@ -398,24 +398,24 @@ class Monster:
 
     def update(self):
         if monster.is_dead(self):
-            self.die()
-        self.move()
+            self._die()
+        self._move()
 
-    def move(self):
+    def _move(self):
         if self.tick >= self.maxTick:
-            self.distanceTravelled += self.movement
-            self.x, self.y = self.positionFormula()
+            self.distance_travelled += self.movement
+            self.x, self.y = self._compute_position()
             self.movement = self.speed
             self.tick = 0
             self.maxTick = 1
         self.tick += 1
 
     # TODO: Optimize this section, as recomputing each time
-    def positionFormula(self) -> grid.Loc:
-        dist = self.distanceTravelled
-        b_dim = self.block_dim
-        x = self.spawn.x
-        y = self.spawn.y + b_dim / 2
+    def _compute_position(self) -> grid.Loc:
+        dist = self.distance_travelled
+        b_dim = self._block_dim
+        x = self._spawn.x
+        y = self._spawn.y + b_dim / 2
         blocks = int((dist - (dist % b_dim)) / b_dim)
         if blocks != 0:
             for i in range(blocks):
@@ -442,12 +442,12 @@ class Monster:
 
         return grid.Loc(x, y)
 
-    def die(self):
+    def _die(self):
         ...
 
     @property
     def _spawn_children_loc(self) -> float:
-        return self.distanceTravelled + self.block_dim * (0.5 - random.random())
+        return self.distance_travelled + self._block_dim * (0.5 - random.random())
 
     def paint(self, canvas: tk.Canvas):
         canvas.create_rectangle(
@@ -461,19 +461,19 @@ class Monster:
         canvas.create_rectangle(
             self.x - self.axis + 1,
             self.y - 3 * self.axis / 2 + 1,
-            self.x - self.axis + (self.axis * 2 - 2) * self.health / self.maxHealth,
+            self.x - self.axis + (self.axis * 2 - 2) * self.health / self._max_health,
             self.y - self.axis - 2,
             fill="green",
             outline="green",
         )
-        canvas.create_image(self.x, self.y, image=self.image, anchor=tk.CENTER)
+        canvas.create_image(self.x, self.y, image=self._image, anchor=tk.CENTER)
 
 
 class Monster1(Monster):
     def __init__(self, distance: float, spawn: grid.Loc, block_dim: Dimension):
         super().__init__(distance, spawn, block_dim)
-        self.maxHealth = 30
-        self.health = self.maxHealth
+        self._max_health = 30
+        self.health = self._max_health
         self.value = 5
         self.speed = float(block_dim) / 2
         self.movement = block_dim / 3
@@ -483,30 +483,32 @@ class Monster1(Monster):
 class Monster2(Monster):
     def __init__(self, distance: float, spawn: grid.Loc, block_dim: Dimension):
         super().__init__(distance, spawn, block_dim)
-        self.maxHealth = 50
-        self.health = self.maxHealth
+        self._max_health = 50
+        self.health = self._max_health
         self.value = 10
-        self.speed = float(block_dim) / 4
-        self.movement = float(block_dim) / 4
+        self.speed = block_dim / 4
+        self.movement = block_dim / 4
         self.axis = block_dim / 2
 
-    def die(self):
-        self.children = [Monster1(self._spawn_children_loc, self.spawn, self.block_dim)]
+    def _die(self):
+        self.children = [
+            Monster1(self._spawn_children_loc, self._spawn, self._block_dim)
+        ]
 
 
 class AlexMonster(Monster):
     def __init__(self, distance: float, spawn: grid.Loc, block_dim: Dimension):
         super().__init__(distance, spawn, block_dim)
-        self.maxHealth = 500
-        self.health = self.maxHealth
+        self._max_health = 500
+        self.health = self._max_health
         self.value = 100
-        self.speed = float(block_dim) / 5
-        self.movement = float(block_dim) / 5
+        self.speed = block_dim / 5
+        self.movement = block_dim / 5
         self.axis = block_dim
 
-    def die(self):
+    def _die(self):
         self.children = [
-            Monster2(self._spawn_children_loc, self.spawn, self.block_dim)
+            Monster2(self._spawn_children_loc, self._spawn, self._block_dim)
             for _ in range(5)
         ]
 
@@ -514,16 +516,16 @@ class AlexMonster(Monster):
 class BenMonster(Monster):
     def __init__(self, distance: float, spawn: grid.Loc, block_dim: Dimension):
         super().__init__(distance, spawn, block_dim)
-        self.maxHealth = 200
-        self.health = self.maxHealth
+        self._max_health = 200
+        self.health = self._max_health
         self.value = 30
-        self.speed = float(block_dim) / 4
-        self.movement = float(block_dim) / 4
+        self.speed = block_dim / 4
+        self.movement = block_dim / 4
         self.axis = block_dim / 2
 
-    def die(self):
+    def _die(self):
         self.children = [
-            LeoMonster(self._spawn_children_loc, self.spawn, self.block_dim)
+            LeoMonster(self._spawn_children_loc, self._spawn, self._block_dim)
             for _ in range(2)
         ]
 
@@ -531,22 +533,22 @@ class BenMonster(Monster):
 class LeoMonster(Monster):
     def __init__(self, distance: float, spawn: grid.Loc, block_dim: Dimension):
         super().__init__(distance, spawn, block_dim)
-        self.maxHealth = 20
-        self.health = self.maxHealth
+        self._max_health = 20
+        self.health = self._max_health
         self.value = 2
-        self.speed = float(block_dim) / 2
-        self.movement = float(block_dim) / 2
+        self.speed = block_dim / 2
+        self.movement = block_dim / 2
         self.axis = block_dim / 4
 
 
 class MonsterBig(Monster):
     def __init__(self, distance: float, spawn: grid.Loc, block_dim: Dimension):
         super().__init__(distance, spawn, block_dim)
-        self.maxHealth = 1000
-        self.health = self.maxHealth
+        self._max_health = 1000
+        self.health = self._max_health
         self.value = 10
-        self.speed = float(block_dim) / 6
-        self.movement = float(block_dim) / 6
+        self.speed = block_dim / 6
+        self.movement = block_dim / 6
         self.axis = 3 * block_dim / 2
 
 
