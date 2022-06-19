@@ -285,7 +285,7 @@ class Infoboard:
         self.image = ImageTk.PhotoImage(Image.open("images/infoBoard.png"))
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.currentButtons: list[buttons.Button] = []
-        self.towerImage: ImageTk.PhotoImage
+        self.towerImage: ImageTk.PhotoImage | None
         self.text: str | None
 
     def buttonsCheck(self, point: grid.Point) -> None:
@@ -306,42 +306,48 @@ class Infoboard:
         self.canvas.create_text(80, 75, text=displayTower.name, font=("times", 20))
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
+        def _draw_info_buttons(canvas: tk.Canvas) -> None:
+            def _target_btns() -> None:
+                p1 = buttons.make_coords(26, 30, 35, 39)
+
+                self.currentButtons.append(TargetButton(*p1, 0))
+                canvas.create_text(
+                    37, 28, text="> Health", font=("times", 12), fill="white", anchor=tk.NW
+                )
+
+                self.currentButtons.append(TargetButton(*p1, 1))
+                canvas.create_text(
+                    37, 48, text="< Health", font=("times", 12), fill="white", anchor=tk.NW
+                )
+
+                self.currentButtons.append(
+                    TargetButton(*buttons.make_coords(92, 50, 101, 59), 2)
+                )
+                canvas.create_text(
+                    103,
+                    48,
+                    text="> Distance",
+                    font=("times", 12),
+                    fill="white",
+                    anchor=tk.NW,
+                )
+
+                self.currentButtons.append(
+                    TargetButton(*buttons.make_coords(92, 30, 101, 39), 3)
+                )
+                canvas.create_text(
+                    103,
+                    28,
+                    text="< Distance",
+                    font=("times", 12),
+                    fill="white",
+                    anchor=tk.NW,
+                )
+
+            _target_btns()
+
         if issubclass(displayTower.__class__, TargetingTower):
-            p1 = buttons.make_coords(26, 30, 35, 39)
-
-            self.currentButtons.append(TargetButton(*p1, 0))
-            self.canvas.create_text(
-                37, 28, text="> Health", font=("times", 12), fill="white", anchor=tk.NW
-            )
-
-            self.currentButtons.append(TargetButton(*p1, 1))
-            self.canvas.create_text(
-                37, 48, text="< Health", font=("times", 12), fill="white", anchor=tk.NW
-            )
-
-            self.currentButtons.append(
-                TargetButton(*buttons.make_coords(92, 50, 101, 59), 2)
-            )
-            self.canvas.create_text(
-                103,
-                48,
-                text="> Distance",
-                font=("times", 12),
-                fill="white",
-                anchor=tk.NW,
-            )
-
-            self.currentButtons.append(
-                TargetButton(*buttons.make_coords(92, 30, 101, 39), 3)
-            )
-            self.canvas.create_text(
-                103,
-                28,
-                text="< Distance",
-                font=("times", 12),
-                fill="white",
-                anchor=tk.NW,
-            )
+            _draw_info_buttons(self.canvas)
 
             self.currentButtons.append(
                 StickyButton(*buttons.make_coords(10, 40, 19, 49))
@@ -375,7 +381,7 @@ class Infoboard:
             if displayTower.stickyTarget:
                 self.currentButtons[4].paint(self.canvas)
 
-    def displayGeneric(self):
+    def displayGeneric(self, selectedTower: str):
         self.currentButtons = []
         if selectedTower == "<None>":
             self.text = None
@@ -416,7 +422,7 @@ class Towerbox:
         global displayTower
         selectedTower = str(self.box.get(self.box.curselection()))
         displayTower = None
-        self.infoboard.displayGeneric()
+        self.infoboard.displayGeneric(selectedTower)
 
 
 class Mouse:
