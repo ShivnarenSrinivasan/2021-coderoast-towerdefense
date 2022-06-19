@@ -27,7 +27,7 @@ from .tower import ITowerMap
 
 from .game import Game, GameState, Stats
 
-blockSize = Dimension(20)  # pixels wide of each block
+block_dim = Dimension(20)  # pixels wide of each block
 
 pathList = []
 monsters: list[IMonster] = []
@@ -41,7 +41,7 @@ class TowerDefenseGame(Game):
         self,
         title: str = "Tower Defense",
         grid_dim: Dimension = Dimension(30),
-        block_dim: Dimension = blockSize,
+        block_dim: Dimension = block_dim,
         map_name: str = 'LeoMap',
     ):
         """Create Tower Defense game.
@@ -355,7 +355,7 @@ class Projectile(ABC):
         self.hit = False
         self.x = x
         self.y = y
-        self.speed = blockSize / 2
+        self.speed = block_dim / 2
         self.damage = damage
         self.speed = speed
         self.target: Monster
@@ -437,7 +437,7 @@ class AngledProjectile(Projectile):
     def checkHit(self):
         for monster_ in monsters:
             if (monster_.x - self.x) ** 2 + (monster_.y - self.y) ** 2 <= (
-                blockSize
+                block_dim
             ) ** 2:
                 self.hit = True
                 self.target = monster_
@@ -475,7 +475,7 @@ class TargetingTower(tower.ShootingTower):
 
         if not self.stickyTarget:
             for monster_ in monster_list:
-                if (self.range + blockSize / 2) ** 2 >= (self.x - monster_.x) ** 2 + (
+                if (self.range + block_dim / 2) ** 2 >= (self.x - monster_.x) ** 2 + (
                     self.y - monster_.y
                 ) ** 2:
                     self.target = monster_
@@ -483,7 +483,7 @@ class TargetingTower(tower.ShootingTower):
         if self.target:
             if (
                 self.target.alive
-                and (self.range + blockSize / 2)
+                and (self.range + block_dim / 2)
                 >= ((self.x - self.target.x) ** 2 + (self.y - self.target.y) ** 2)
                 ** 0.5
             ):
@@ -494,7 +494,7 @@ class TargetingTower(tower.ShootingTower):
                 self.target = None
         elif self.stickyTarget:
             for monster_ in monster_list:
-                if (self.range + blockSize / 2) ** 2 >= (self.x - monster_.x) ** 2 + (
+                if (self.range + block_dim / 2) ** 2 >= (self.x - monster_.x) ** 2 + (
                     self.y - monster_.y
                 ) ** 2:
                     self.target = monster_
@@ -509,17 +509,17 @@ class ArrowShooterTower(TargetingTower):
         super(ArrowShooterTower, self).__init__(x, y, gridx, gridy)
         self.name = "Arrow Shooter"
         self.infotext = "ArrowShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = blockSize * 10
+        self.range = block_dim * 10
         self.bulletsPerSecond = 1
         self.damage = 10
-        self.speed = blockSize
+        self.speed = block_dim
         self.upgradeCost = 50
         self.angle: float
 
     def nextLevel(self):
         if self.level == 2:
             self.upgradeCost = 100
-            self.range = blockSize * 11
+            self.range = block_dim * 11
             self.damage = 12
         elif self.level == 3:
             self.upgradeCost = None
@@ -535,7 +535,7 @@ class ArrowShooterTower(TargetingTower):
                 self.damage,
                 self.speed,
                 self.angle,
-                self.range + blockSize / 2,
+                self.range + block_dim / 2,
             )
         )
 
@@ -545,10 +545,10 @@ class BulletShooterTower(TargetingTower):
         super(BulletShooterTower, self).__init__(x, y, gridx, gridy)
         self.name = "Bullet Shooter"
         self.infotext = "BulletShooterTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = blockSize * 6
+        self.range = block_dim * 6
         self.bulletsPerSecond = 4
         self.damage = 5
-        self.speed = blockSize / 2
+        self.speed = block_dim / 2
 
     def shoot(self):
         projectiles.append(
@@ -564,10 +564,10 @@ class PowerTower(TargetingTower):
         super(PowerTower, self).__init__(x, y, gridx, gridy)
         self.name = "Power Tower"
         self.infotext = "PowerTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = blockSize * 8
+        self.range = block_dim * 8
         self.bulletsPerSecond = 10
         self.damage = 1
-        self.speed = blockSize
+        self.speed = block_dim
         self.slow = 3
 
     def shoot(self):
@@ -584,10 +584,10 @@ class TackTower(TargetingTower):
         super(TackTower, self).__init__(x, y, gridx, gridy)
         self.name = "Tack Tower"
         self.infotext = "TackTower at [" + str(gridx) + "," + str(gridy) + "]."
-        self.range = blockSize * 5
+        self.range = block_dim * 5
         self.bulletsPerSecond = 1
         self.damage = 10
-        self.speed = blockSize
+        self.speed = block_dim
         self.angle: float
 
     def shoot(self):
@@ -671,27 +671,27 @@ class Monster:
     def positionFormula(self) -> grid.Loc:
         dist = self.distanceTravelled
         x = self.spawn.x
-        y = self.spawn.y + blockSize / 2
-        blocks = int((dist - (dist % blockSize)) / blockSize)
+        y = self.spawn.y + block_dim / 2
+        blocks = int((dist - (dist % block_dim)) / block_dim)
         if blocks != 0:
             for i in range(blocks):
                 if pathList[i] == 1:
-                    x += blockSize
+                    x += block_dim
                 elif pathList[i] == 2:
-                    x -= blockSize
+                    x -= block_dim
                 elif pathList[i] == 3:
-                    y += blockSize
+                    y += block_dim
                 else:
-                    y -= blockSize
-        if dist % blockSize != 0:
+                    y -= block_dim
+        if dist % block_dim != 0:
             if pathList[blocks] == 1:
-                x += dist % blockSize
+                x += dist % block_dim
             elif pathList[blocks] == 2:
-                x -= dist % blockSize
+                x -= dist % block_dim
             elif pathList[blocks] == 3:
-                y += dist % blockSize
+                y += dist % block_dim
             else:
-                y -= dist % blockSize
+                y -= dist % block_dim
         if pathList[blocks] == 5:
             self.gotThrough()
 
@@ -735,9 +735,9 @@ class Monster1(Monster):
         self.maxHealth = 30
         self.health = self.maxHealth
         self.value = 5
-        self.speed = float(blockSize) / 2
-        self.movement = blockSize / 3
-        self.axis = blockSize / 2
+        self.speed = float(block_dim) / 2
+        self.movement = block_dim / 3
+        self.axis = block_dim / 2
 
 
 class Monster2(Monster):
@@ -746,14 +746,14 @@ class Monster2(Monster):
         self.maxHealth = 50
         self.health = self.maxHealth
         self.value = 10
-        self.speed = float(blockSize) / 4
-        self.movement = float(blockSize) / 4
-        self.axis = blockSize / 2
+        self.speed = float(block_dim) / 4
+        self.movement = float(block_dim) / 4
+        self.axis = block_dim / 2
 
     def killed(self):
         monsters.append(
             Monster1(
-                self.distanceTravelled + blockSize * (0.5 - random.random()), self.spawn
+                self.distanceTravelled + block_dim * (0.5 - random.random()), self.spawn
             )
         )
         self.die()
@@ -765,15 +765,15 @@ class AlexMonster(Monster):
         self.maxHealth = 500
         self.health = self.maxHealth
         self.value = 100
-        self.speed = float(blockSize) / 5
-        self.movement = float(blockSize) / 5
-        self.axis = blockSize
+        self.speed = float(block_dim) / 5
+        self.movement = float(block_dim) / 5
+        self.axis = block_dim
 
     def killed(self):
         for _ in range(5):
             monsters.append(
                 Monster2(
-                    self.distanceTravelled + blockSize * (0.5 - random.random()),
+                    self.distanceTravelled + block_dim * (0.5 - random.random()),
                     self.spawn,
                 )
             )
@@ -786,15 +786,15 @@ class BenMonster(Monster):
         self.maxHealth = 200
         self.health = self.maxHealth
         self.value = 30
-        self.speed = float(blockSize) / 4
-        self.movement = float(blockSize) / 4
-        self.axis = blockSize / 2
+        self.speed = float(block_dim) / 4
+        self.movement = float(block_dim) / 4
+        self.axis = block_dim / 2
 
     def killed(self):
         for _ in range(2):
             monsters.append(
                 LeoMonster(
-                    self.distanceTravelled + blockSize * (0.5 - random.random()),
+                    self.distanceTravelled + block_dim * (0.5 - random.random()),
                     self.spawn,
                 )
             )
@@ -807,9 +807,9 @@ class LeoMonster(Monster):
         self.maxHealth = 20
         self.health = self.maxHealth
         self.value = 2
-        self.speed = float(blockSize) / 2
-        self.movement = float(blockSize) / 2
-        self.axis = blockSize / 4
+        self.speed = float(block_dim) / 2
+        self.movement = float(block_dim) / 2
+        self.axis = block_dim / 4
 
 
 class MonsterBig(Monster):
@@ -818,9 +818,9 @@ class MonsterBig(Monster):
         self.maxHealth = 1000
         self.health = self.maxHealth
         self.value = 10
-        self.speed = float(blockSize) / 6
-        self.movement = float(blockSize) / 6
-        self.axis = 3 * blockSize / 2
+        self.speed = float(block_dim) / 6
+        self.movement = float(block_dim) / 6
+        self.axis = 3 * block_dim / 2
 
 
 def monster_factory(idx: int, spawn: grid.Loc) -> Monster:
