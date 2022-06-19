@@ -312,34 +312,20 @@ class Infoboard:
                 p1 = buttons.make_coords(26, 30, 35, 39)
 
                 self.currentButtons.append(TargetButton(*p1, 0))
-                canvas.create_text(
-                    37, 28, text="> Health", **text_config
-                )
+                canvas.create_text(37, 28, text="> Health", **text_config)
 
                 self.currentButtons.append(TargetButton(*p1, 1))
-                canvas.create_text(
-                    37, 48, text="< Health", **text_config
-                )
+                canvas.create_text(37, 48, text="< Health", **text_config)
 
                 self.currentButtons.append(
                     TargetButton(*buttons.make_coords(92, 50, 101, 59), 2)
                 )
-                canvas.create_text(
-                    103,
-                    48,
-                    text="> Distance",
-                    **text_config
-                )
+                canvas.create_text(103, 48, text="> Distance", **text_config)
 
                 self.currentButtons.append(
                     TargetButton(*buttons.make_coords(92, 30, 101, 39), 3)
                 )
-                canvas.create_text(
-                    103,
-                    28,
-                    text="< Distance",
-                    **text_config
-                )
+                canvas.create_text(103, 28, text="< Distance", **text_config)
 
             _target_btns()
 
