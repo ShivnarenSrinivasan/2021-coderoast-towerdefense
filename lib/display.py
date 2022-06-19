@@ -1,10 +1,13 @@
 import tkinter as tk
 from typing import (
+    Any,
+    Iterable,
     NamedTuple,
 )
 
 
 from . import buttons
+from ._type_aliases import _Anchor
 
 
 class Displayboard:
@@ -53,3 +56,18 @@ class Moneybar:
 class Value(NamedTuple):
     coord: tuple[float, float]
     text: str
+
+
+def create_texts(
+    canvas: tk.Canvas,
+    items: Iterable[tuple[Any, Value | None]],
+    font: tuple[str, int],
+    fill: str,
+    anchor: _Anchor,
+) -> None:
+    for _, val in items:
+        if val is None:
+            continue
+        canvas.create_text(
+            val.coord, text=val.text, font=font, fill=fill, anchor=anchor
+        )

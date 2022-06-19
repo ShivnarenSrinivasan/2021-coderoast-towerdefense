@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 import math
+import itertools as it
 import random
 from collections.abc import (
     Iterable,
@@ -327,14 +328,13 @@ class Infoboard:
                     (make_btn((92, 30), (101, 39), 2), Value((103, 28), "< Distance")),
                 ]
 
-                for _, val in buttons_and_text:
-                    canvas.create_text(
-                        val.coord,
-                        text=val.text,
-                        font=('times', 12),
-                        fill='white',
-                        anchor=tk.NW,
-                    )
+                display.create_texts(
+                    canvas,
+                    buttons_and_text,
+                    font=('times', 12),
+                    fill='white',
+                    anchor=tk.NW,
+                )
 
                 return (item[0] for item in buttons_and_text)
 
@@ -348,32 +348,41 @@ class Infoboard:
         def _misc_buttons(
             canvas: tk.Canvas, tower_: TargetingTower
         ) -> Iterable[Button]:
-            btns: list[Button] = [
-                StickyButton(*buttons.make_coords(10, 40, 19, 49)),
-                SellButton(*buttons.make_coords(5, 145, 78, 168)),
+            BtnVal = list[tuple[Button, Value | None]]
+            btn_text: BtnVal = [
+                (StickyButton(*buttons.make_coords(10, 40, 19, 49)), None),
+                (
+                    SellButton(*buttons.make_coords(5, 145, 78, 168)),
+                    Value((28, 146), 'Sell'),
+                ),
             ]
 
+            btn_text1: BtnVal
             if tower_.upgradeCost:
-                btns.append(UpgradeButton(*buttons.make_coords(82, 145, 155, 168)))
+                btn_text1 = [
+                    (UpgradeButton(*buttons.make_coords(82, 145, 155, 168)), None)
+                ]
                 canvas.create_text(
-                    120,
-                    157,
+                    (120, 157),
                     text="Upgrade: " + str(tower_.upgradeCost),
                     font=("times", 12),
                     fill="light green",
                     anchor=tk.CENTER,
                 )
+            else:
+                btn_text1 = []
 
-            canvas.create_text(
-                28,
-                146,
-                text="Sell",
+            btn_texts_ = tuple(it.chain(btn_text, btn_text1))
+
+            display.create_texts(
+                canvas,
+                btn_texts_,
                 font=("times", 22),
                 fill="light green",
                 anchor=tk.NW,
             )
 
-            return btns
+            return (item[0] for item in btn_texts_)
 
         self.currentButtons.extend(_misc_buttons(self.canvas, displayTower))
 
