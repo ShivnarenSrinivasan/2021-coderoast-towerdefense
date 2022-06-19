@@ -312,7 +312,7 @@ class Infoboard:
         self.canvas.create_text(80, 75, text=displayTower.name, font=("times", 20))
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
-        def _draw_info_buttons(canvas: tk.Canvas) -> None:
+        def _gen_draw_info_buttons(canvas: tk.Canvas) -> Iterable[Button]:
             def _target_btns(canvas: tk.Canvas) -> Iterable[Button]:
                 _c1, _c2 = (26, 30), (35, 39)
 
@@ -338,14 +338,15 @@ class Infoboard:
 
                 return (item[0] for item in buttons_and_text)
 
-            self.currentButtons.extend(_target_btns(canvas))
+            btns = _target_btns(canvas)
+            return btns
 
         if not isinstance(displayTower, TargetingTower):
             return None
 
-        _draw_info_buttons(self.canvas)
+        self.currentButtons.extend(_gen_draw_info_buttons(self.canvas))
 
-        def _misc_buttons(
+        def _gen_draw_misc_buttons(
             canvas: tk.Canvas, tower_: TargetingTower
         ) -> Iterable[Button]:
             BtnVal = list[tuple[Button, Value | None]]
@@ -384,7 +385,7 @@ class Infoboard:
 
             return (item[0] for item in btn_texts_)
 
-        self.currentButtons.extend(_misc_buttons(self.canvas, displayTower))
+        self.currentButtons.extend(_gen_draw_misc_buttons(self.canvas, displayTower))
 
         self.currentButtons[displayTower.targetList].paint(self.canvas)
         if displayTower.stickyTarget:
