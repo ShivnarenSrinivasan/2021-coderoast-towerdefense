@@ -14,11 +14,14 @@ def _config_path() -> None:
 
 _config_path()
 
-from lib import tower_defense
+from lib import (
+    tower_defense,
+    game as G,
+)
 
 
 def main() -> None:
-    game = tower_defense.TowerDefenseGame()
+    game = tower_defense.TowerDefenseGame(stats=G.Stats(2_000, 100))
     game.run()
 
 

@@ -27,6 +27,7 @@ block_dim = Dimension(20)  # pixels wide of each block
 
 pathList = []
 
+
 class TowerDefenseGame(Game):
     def __init__(
         self,
@@ -34,6 +35,7 @@ class TowerDefenseGame(Game):
         grid_dim: Dimension = Dimension(30),
         block_dim: Dimension = Dimension(20),
         map_name: str = 'LeoMap',
+        stats: Stats = Stats(1000, 100),
     ):
         """Create Tower Defense game.
 
@@ -44,7 +46,7 @@ class TowerDefenseGame(Game):
         self.grid_dim = grid_dim
         self.block_dim = block_dim
         self.state = GameState.IDLE
-        self.stats = Stats(1000, 100)
+        self.stats = stats
 
         self.displayboard = display.Displayboard(self.frame, self.stats)
         tower_map = tower.TowerMap()
