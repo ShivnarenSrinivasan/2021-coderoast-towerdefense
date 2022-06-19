@@ -282,6 +282,74 @@ class UpgradeButton(buttons.Button):
             displayTower.upgrade()
 
 
+def _gen_draw_info_buttons(canvas: tk.Canvas) -> Iterable[Button]:
+    def _target_btns(canvas: tk.Canvas) -> Iterable[Button]:
+        _c1, _c2 = (26, 30), (35, 39)
+
+        def make_btn(
+            c1: tuple[int, int], c2: tuple[int, int], btn_type: int
+        ) -> TargetButton:
+            return TargetButton(*buttons.make_coords(*c1, *c2), btn_type)
+
+        buttons_and_text: list[tuple[Button, Value]] = [
+            (make_btn(_c1, _c2, 0), Value((37, 28), '> Health')),
+            (make_btn(_c1, _c2, 1), Value((37, 48), '< Health')),
+            (make_btn((92, 50), (101, 59), 2), Value((103, 48), "> Distance")),
+            (make_btn((92, 30), (101, 39), 2), Value((103, 28), "< Distance")),
+        ]
+
+        display.create_texts(
+            canvas,
+            buttons_and_text,
+            font=('times', 12),
+            fill='white',
+            anchor=tk.NW,
+        )
+
+        return (item[0] for item in buttons_and_text)
+
+    btns = _target_btns(canvas)
+    return btns
+
+
+def _gen_draw_misc_buttons(
+    canvas: tk.Canvas, tower_: TargetingTower
+) -> Iterable[Button]:
+    BtnVal = list[tuple[Button, Value | None]]
+    btn_text: BtnVal = [
+        (StickyButton(*buttons.make_coords(10, 40, 19, 49)), None),
+        (
+            SellButton(*buttons.make_coords(5, 145, 78, 168)),
+            Value((28, 146), 'Sell'),
+        ),
+    ]
+
+    btn_text1: BtnVal
+    if tower_.upgradeCost:
+        btn_text1 = [(UpgradeButton(*buttons.make_coords(82, 145, 155, 168)), None)]
+        canvas.create_text(
+            (120, 157),
+            text="Upgrade: " + str(tower_.upgradeCost),
+            font=("times", 12),
+            fill="light green",
+            anchor=tk.CENTER,
+        )
+    else:
+        btn_text1 = []
+
+    btn_texts_ = tuple(it.chain(btn_text, btn_text1))
+
+    display.create_texts(
+        canvas,
+        btn_texts_,
+        font=("times", 22),
+        fill="light green",
+        anchor=tk.NW,
+    )
+
+    return (item[0] for item in btn_texts_)
+
+
 class Infoboard:
     def __init__(self, frame: tk.Frame):
         self.canvas = tk.Canvas(
@@ -312,78 +380,10 @@ class Infoboard:
         self.canvas.create_text(80, 75, text=displayTower.name, font=("times", 20))
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
-        def _gen_draw_info_buttons(canvas: tk.Canvas) -> Iterable[Button]:
-            def _target_btns(canvas: tk.Canvas) -> Iterable[Button]:
-                _c1, _c2 = (26, 30), (35, 39)
-
-                def make_btn(
-                    c1: tuple[int, int], c2: tuple[int, int], btn_type: int
-                ) -> TargetButton:
-                    return TargetButton(*buttons.make_coords(*c1, *c2), btn_type)
-
-                buttons_and_text: list[tuple[Button, Value]] = [
-                    (make_btn(_c1, _c2, 0), Value((37, 28), '> Health')),
-                    (make_btn(_c1, _c2, 1), Value((37, 48), '< Health')),
-                    (make_btn((92, 50), (101, 59), 2), Value((103, 48), "> Distance")),
-                    (make_btn((92, 30), (101, 39), 2), Value((103, 28), "< Distance")),
-                ]
-
-                display.create_texts(
-                    canvas,
-                    buttons_and_text,
-                    font=('times', 12),
-                    fill='white',
-                    anchor=tk.NW,
-                )
-
-                return (item[0] for item in buttons_and_text)
-
-            btns = _target_btns(canvas)
-            return btns
-
         if not isinstance(displayTower, TargetingTower):
             return None
 
         self.currentButtons.extend(_gen_draw_info_buttons(self.canvas))
-
-        def _gen_draw_misc_buttons(
-            canvas: tk.Canvas, tower_: TargetingTower
-        ) -> Iterable[Button]:
-            BtnVal = list[tuple[Button, Value | None]]
-            btn_text: BtnVal = [
-                (StickyButton(*buttons.make_coords(10, 40, 19, 49)), None),
-                (
-                    SellButton(*buttons.make_coords(5, 145, 78, 168)),
-                    Value((28, 146), 'Sell'),
-                ),
-            ]
-
-            btn_text1: BtnVal
-            if tower_.upgradeCost:
-                btn_text1 = [
-                    (UpgradeButton(*buttons.make_coords(82, 145, 155, 168)), None)
-                ]
-                canvas.create_text(
-                    (120, 157),
-                    text="Upgrade: " + str(tower_.upgradeCost),
-                    font=("times", 12),
-                    fill="light green",
-                    anchor=tk.CENTER,
-                )
-            else:
-                btn_text1 = []
-
-            btn_texts_ = tuple(it.chain(btn_text, btn_text1))
-
-            display.create_texts(
-                canvas,
-                btn_texts_,
-                font=("times", 22),
-                fill="light green",
-                anchor=tk.NW,
-            )
-
-            return (item[0] for item in btn_texts_)
 
         self.currentButtons.extend(_gen_draw_misc_buttons(self.canvas, displayTower))
 
