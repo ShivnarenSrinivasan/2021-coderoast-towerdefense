@@ -139,7 +139,7 @@ class Tower(ABC):
             proj.paint(canvas)
 
 
-def load_img(tower: Tower | str) -> ImageTk.PhotoImage:
+def load_img(tower: ITower | Tower | str) -> ImageTk.PhotoImage:
     match tower:
         case Tower():
             img_fp = Path(f'tower/{tower.__class__.__name__}/{tower.level}.png')
@@ -157,6 +157,9 @@ class ITower(Protocol):
     stickyTarget: bool
     name: str
     upgradeCost: int
+
+    def upgrade(self) -> None:
+        ...
 
 
 towers = {
@@ -203,6 +206,9 @@ class TargetingTower(Tower):
             proj.update(self._monsters)
             if proj.should_remove:
                 self._projectiles.remove(proj)
+
+    def nextLevel(self) -> None:
+        ...
 
     def _prepareShot(self):
         monster_list = monster.gen_list(self._monsters)[self.targetList]

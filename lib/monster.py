@@ -21,6 +21,8 @@ class IMonster(GameObject, Movable, Protocol):
     health: int
     x: float
     y: float
+    tick: int
+    maxTick: int
 
     def killed(self) -> None:
         ...
