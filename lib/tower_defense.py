@@ -2,11 +2,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import math
 import random
-from collections.abc import Sequence
+from collections.abc import (
+    Iterable,
+    Sequence,
+)
 from functools import cached_property
+from typing import NamedTuple, TypedDict
 import tkinter as tk
 from PIL import Image, ImageTk
-
 
 from . import (
     buttons,
@@ -25,6 +28,8 @@ from .maps import Dimension
 from .monster import IMonster
 
 from .game import Game, GameState
+
+from ._type_aliases import _Anchor
 
 blockSize = Dimension(20)  # pixels wide of each block
 
@@ -307,27 +312,44 @@ class Infoboard:
         self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
 
         def _draw_info_buttons(canvas: tk.Canvas) -> None:
-            def _target_btns() -> None:
-                text_config = dict(font=("times", 12), fill="white", anchor=tk.NW)
-                p1 = buttons.make_coords(26, 30, 35, 39)
+            def _target_btns() -> Iterable[TargetButton]:
+                _c1, _c2 = (26, 30), (35, 39)
 
-                self.currentButtons.append(TargetButton(*p1, 0))
-                canvas.create_text(37, 28, text="> Health", **text_config)
+                class Value(NamedTuple):
+                    coord: tuple[float, float]
+                    text: str
 
-                self.currentButtons.append(TargetButton(*p1, 1))
-                canvas.create_text(37, 48, text="< Health", **text_config)
+                class Text(TypedDict):
+                    text: str
+                    font: tuple[str, int]
+                    fill: str
+                    anchor: _Anchor
 
-                self.currentButtons.append(
-                    TargetButton(*buttons.make_coords(92, 50, 101, 59), 2)
-                )
-                canvas.create_text(103, 48, text="> Distance", **text_config)
+                def make_btn(
+                    c1: tuple[int, int], c2: tuple[int, int], btn_type: int
+                ) -> TargetButton:
+                    return TargetButton(*buttons.make_coords(*c1, *c2), btn_type)
 
-                self.currentButtons.append(
-                    TargetButton(*buttons.make_coords(92, 30, 101, 39), 3)
-                )
-                canvas.create_text(103, 28, text="< Distance", **text_config)
+                buttons_and_text: list[tuple[TargetButton, Value]] = [
+                    (make_btn(_c1, _c2, 0), Value((37, 28), '> Health')),
+                    (make_btn(_c1, _c2, 1), Value((37, 48), '< Health')),
+                    (make_btn((92, 50), (101, 59), 2), Value((103, 48), "> Distance")),
+                    (make_btn((92, 30), (101, 39), 2), Value((103, 28), "< Distance")),
+                ]
+                for _, val in buttons_and_text:
+                    canvas.create_text(
+                        val.coord,
+                        **Text(
+                            text=val.text,
+                            font=('times', 12),
+                            fill='white',
+                            anchor=tk.NW,
+                        ),
+                    )
 
-            _target_btns()
+                return (item[0] for item in buttons_and_text)
+
+            self.currentButtons.extend(_target_btns())
 
         if issubclass(displayTower.__class__, TargetingTower):
             _draw_info_buttons(self.canvas)
