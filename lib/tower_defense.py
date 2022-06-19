@@ -41,8 +41,6 @@ monsters: list[IMonster] = []
 projectiles: list[Projectile] = []
 health = 100
 money = 5000000000
-selectedTower = "<None>"
-displayTower = None
 
 
 class TowerDefenseGame(Game):
@@ -72,7 +70,7 @@ class TowerDefenseGame(Game):
             [
                 maps.Map(map_name),
                 Wavegenerator(self),
-                Mouse(self, infoboard),
+                Mouse(self, infoboard, self.towerbox),
                 tower_map,
             ]
         )
@@ -106,8 +104,6 @@ class TowerDefenseGame(Game):
         for projectile_ in projectiles:
             projectile_.paint(self.canvas)
 
-        if displayTower:
-            displayTower.paintSelect(self.canvas)
         self.displayboard.paint(
             'blue' if self.is_idle and len(monsters) == 0 else 'red'
         )
@@ -247,31 +243,35 @@ class TargetButton(buttons.Button):
         self.type = myType
 
     def press(self, tower_map: ITowerMap):
-        assert displayTower is not None
-        displayTower.targetList = self.type
+        if tower_map.displayed is not None:
+            tower_map.displayed.targetList = self.type
 
 
 class StickyButton(buttons.Button):
     def press(self, tower_map: ITowerMap):
-        assert displayTower is not None
-        if not displayTower.stickyTarget:
-            displayTower.stickyTarget = True
+        display_tower = tower_map.displayed
+        if display_tower is None:
+            return None
+
+        if not display_tower.stickyTarget:
+            display_tower.stickyTarget = True
         else:
-            displayTower.stickyTarget = False
+            display_tower.stickyTarget = False
 
 
 class SellButton(buttons.Button):
     def press(self, tower_map: ITowerMap):
-        global displayTower
+        displayTower = tower_map.displayed
         if displayTower is None:
-            raise TypeError('Display Tower should be of type <Tower>')
+            return None
         tower_map.remove(displayTower)
-        displayTower = None
+        tower_map.displayed = None
 
 
 class UpgradeButton(buttons.Button):
     def press(self, tower_map: ITowerMap):
         global money
+        displayTower = tower_map.displayed
         assert displayTower is not None and displayTower.upgradeCost is not None
         if money >= displayTower.upgradeCost:
             money -= displayTower.upgradeCost
@@ -372,6 +372,7 @@ class Infoboard:
         self.canvas.delete(tk.ALL)  # clear the screen
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.currentButtons = []
+        displayTower = self.tower_map.displayed
         if displayTower is None:
             return
 
@@ -418,6 +419,7 @@ class Towerbox:
             bd=1,
             highlightthickness=0,
         )
+        self.selected: str = '<None>'
         self.box.insert(tk.END, "<None>")
         for i in tower.towers:
             self.box.insert(tk.END, i)
@@ -426,18 +428,23 @@ class Towerbox:
         self.box.grid(row=1, column=1, rowspan=2)
         self.box.bind("<<ListboxSelect>>", self.onselect)
 
+    @property
+    def is_selected(self) -> bool:
+        return self.selected != '<None>'
+
     def onselect(self, _):
-        global selectedTower
-        global displayTower
-        selectedTower = str(self.box.get(self.box.curselection()))
-        displayTower = None
-        self.infoboard.displayGeneric(selectedTower)
+        self.selected = str(self.box.get(self.box.curselection()))
+        self.infoboard.tower_map.displayed = None
+        self.infoboard.displayGeneric(self.selected)
 
 
 class Mouse:
-    def __init__(self, game: TowerDefenseGame, infoboard: Infoboard):
+    def __init__(
+        self, game: TowerDefenseGame, infoboard: Infoboard, towerbox: Towerbox
+    ):
         self.game = game
         self.infoboard = infoboard
+        self.towerbox = towerbox
         self.x = 0
         self.y = 0
         self.gridx = 0
@@ -502,14 +509,17 @@ class Mouse:
         )
 
     def _in_update(self) -> None:
+        tower_map = self.infoboard.tower_map
         block_ = self.game.grid[self.gridx][self.gridy]
-        if block_.grid_loc in self.infoboard.tower_map:
-            if not is_tower_selected():
-                select_tower(self.infoboard.tower_map, block_.grid_loc)
+        if block_.grid_loc in tower_map:
+            if not self.towerbox.is_selected:
+                tower_map.select(block_.grid_loc)
                 self.infoboard.displaySpecific()
         else:
-            if is_tower_selected() and can_add_tower(block_, selectedTower):
-                add_tower(self.infoboard.tower_map, block_, selectedTower)
+            if self.towerbox.is_selected and can_add_tower(
+                block_, self.towerbox.selected
+            ):
+                add_tower(tower_map, block_, self.towerbox.selected)
 
     def _out_update(self) -> None:
         pos = grid.Point(self.x - self.xoffset, self.y - self.yoffset)
@@ -806,14 +816,10 @@ def tower_factory(tower_: str, loc: grid.Loc, grid_: grid.Point) -> tower.Tower:
 def select_tower(tower_map: ITowerMap, grid_: grid.Point) -> None:
     tower_ = tower_map[grid_]
     tower_.clicked = True
-    global displayTower
-    displayTower = tower_
+    tower_map.displayed = tower_
 
 
-def is_tower_selected() -> bool:
-    return selectedTower != '<None>'
-
-
+# TODO: Pass tower instance as param to both, instead of string.
 def can_add_tower(block_: Block, tower_: str) -> bool:
     return all([block.is_empty(block_), can_buy_tower(money, tower_)])
 

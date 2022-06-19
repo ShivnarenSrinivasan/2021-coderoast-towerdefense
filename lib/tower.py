@@ -17,7 +17,6 @@ from .protocols import GameObject
 
 class ITowerMap(Protocol):
     displayed: Tower | None
-    selected: str
 
     def __iter__(self) -> Iterable[grid.Point]:
         ...
@@ -40,14 +39,10 @@ class ITowerMap(Protocol):
     def remove(self, tower: Tower) -> None:
         ...
 
-    def is_selected(self) -> bool:
-        ...
-
 
 @dataclass(order=False)
 class TowerMap(GameObject):
     _towers: dict[grid.Point, Tower] = field(default_factory=dict)
-    selected: str = "<None>"
     displayed: Tower | None = None
 
     def __iter__(self) -> Iterable[grid.Point]:
@@ -66,10 +61,6 @@ class TowerMap(GameObject):
         if p in self._towers:
             raise KeyError(f'Point {p} already taken!')
         self._towers[p] = tower
-
-    @property
-    def is_selected(self) -> bool:
-        return self.selected == '<None>'
 
     def select(self, p: grid.Point) -> None:
         tower = self[p]
