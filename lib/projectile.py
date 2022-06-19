@@ -28,18 +28,18 @@ class IProjectile(Protocol):
 class Projectile(ABC):
     def __init__(self, x, y, damage, speed, block_dim: Dimension):
         self.hit = False
-        self.x = x
-        self.y = y
-        self.speed = block_dim / 2
-        self.block_dim = block_dim
-        self.damage = damage
-        self.speed = speed
-        self.target: IMonster | None
-        self.image: ImageTk.PhotoImage
+        self._x = x
+        self._y = y
+        self._speed = block_dim / 2
+        self._block_dim = block_dim
+        self._damage = damage
+        self._speed = speed
+        self._target: IMonster | None
+        self._image: ImageTk.PhotoImage
         self.should_remove: bool = False
 
     def update(self, monsters: list[IMonster]) -> None:
-        if self.target and monster.is_dead(self.target):
+        if self._target and monster.is_dead(self._target):
             self.should_remove = True
             return
         if self.hit:
@@ -49,11 +49,11 @@ class Projectile(ABC):
         self.checkHit(monsters)
 
     def gotMonster(self):
-        assert self.target is not None
-        self.target.health -= self.damage
+        assert self._target is not None
+        self._target.health -= self._damage
 
     def paint(self, canvas: tk.Canvas) -> None:
-        canvas.create_image(self.x, self.y, image=self.image)
+        canvas.create_image(self._x, self._y, image=self._image)
 
     @abstractmethod
     def move(self) -> None:
@@ -67,25 +67,24 @@ class Projectile(ABC):
 class TrackingBullet(Projectile):
     def __init__(self, x, y, damage, speed, target, block_dim: Dimension):
         super().__init__(x, y, damage, speed, block_dim)
-        self.target = target
-        self.image = load_img('bullet')
-        self.length: float
+        self._target = target
+        self._image = load_img('bullet')
 
     def move(self):
-        assert self.target
-        self.length = (
-            (self.x - (self.target.x)) ** 2 + (self.y - (self.target.y)) ** 2
+        assert self._target
+        length = (
+            (self._x - (self._target.x)) ** 2 + (self._y - (self._target.y)) ** 2
         ) ** 0.5
-        if self.length <= 0:
+        if length <= 0:
             return
-        self.x += self.speed * ((self.target.x) - self.x) / self.length
-        self.y += self.speed * ((self.target.y) - self.y) / self.length
+        self._x += self._speed * ((self._target.x) - self._x) / length
+        self._y += self._speed * ((self._target.y) - self._y) / length
 
     def checkHit(self, _: list[IMonster]):
-        assert self.target
+        assert self._target
         if (
-            self.speed**2
-            > (self.x - (self.target.x)) ** 2 + (self.y - (self.target.y)) ** 2
+            self._speed**2
+            > (self._x - (self._target.x)) ** 2 + (self._y - (self._target.y)) ** 2
         ):
             self.hit = True
 
@@ -93,49 +92,49 @@ class TrackingBullet(Projectile):
 class PowerShot(TrackingBullet):
     def __init__(self, x, y, damage, speed, target, slow, block_dim: Dimension):
         super().__init__(x, y, damage, speed, target, block_dim)
-        self.slow = slow
-        self.image = load_img('powerShot')
+        self._slow = slow
+        self._image = load_img('powerShot')
 
     def gotMonster(self):
-        assert self.target
-        self.target.health -= self.damage
-        if self.target.movement > (self.target.speed) / self.slow:
-            self.target.movement = (self.target.speed) / self.slow
+        assert self._target
+        self._target.health -= self._damage
+        if self._target.movement > (self._target.speed) / self._slow:
+            self._target.movement = (self._target.speed) / self._slow
         self.should_remove = True
 
 
 class AngledProjectile(Projectile):
     def __init__(self, x, y, damage, speed, angle, givenRange, block_dim: Dimension):
         super().__init__(x, y, damage, speed, block_dim)
-        self.xChange = speed * math.cos(angle)
-        self.yChange = speed * math.sin(-angle)
-        self.range = givenRange
-        self.image = load_arrow_img(angle)
-        self.target = None
-        self.speed = speed
-        self.distance = 0
+        self._x_change = speed * math.cos(angle)
+        self._y_change = speed * math.sin(-angle)
+        self._range = givenRange
+        self._image = load_arrow_img(angle)
+        self._target = None
+        self._speed = speed
+        self._distance = 0
 
     def checkHit(self, monsters: list[IMonster]):
         for monster_ in monsters:
-            if (monster_.x - self.x) ** 2 + (monster_.y - self.y) ** 2 <= (
-                self.block_dim
+            if (monster_.x - self._x) ** 2 + (monster_.y - self._y) ** 2 <= (
+                self._block_dim
             ) ** 2:
                 self.hit = True
-                self.target = monster_
+                self._target = monster_
                 return
 
     def gotMonster(self):
-        assert self.target
-        self.target.health -= self.damage
-        self.target.tick = 0
-        self.target.maxTick = 5
+        assert self._target
+        self._target.health -= self._damage
+        self._target.tick = 0
+        self._target.maxTick = 5
         self.should_remove = True
 
     def move(self):
-        self.x += self.xChange
-        self.y += self.yChange
-        self.distance += self.speed
-        if self.distance >= self.range:
+        self._x += self._x_change
+        self._y += self._y_change
+        self._distance += self._speed
+        if self._distance >= self._range:
             self.should_remove = True
 
 

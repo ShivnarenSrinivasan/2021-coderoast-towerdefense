@@ -39,14 +39,14 @@ class Infoboard:
         self.canvas.grid(row=0, column=1)
         self.image = ImageTk.PhotoImage(Image.open("images/infoBoard.png"))
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
-        self.currentButtons: list[buttons.Button] = []
-        self.towerImage: ImageTk.PhotoImage | None
+        self._btns: list[buttons.Button] = []
+        self._tower_img: ImageTk.PhotoImage | None
         self.text: str | None
 
     def buttonsCheck(self, point: grid.Point, money: int) -> int:
         amt = 0
         displayTower = self.tower_map.displayed
-        for btn in self.currentButtons:
+        for btn in self._btns:
             if not btn.can_press(point):
                 continue
 
@@ -67,38 +67,38 @@ class Infoboard:
     def displaySpecific(self):
         self.canvas.delete(tk.ALL)  # clear the screen
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
-        self.currentButtons = []
+        self._btns = []
         displayTower = self.tower_map.displayed
         if displayTower is None:
             return
 
-        self.towerImage = tower.load_img(displayTower)
+        self._tower_img = tower.load_img(displayTower)
         self.canvas.create_text(80, 75, text=displayTower.name, font=("times", 20))
-        self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
+        self.canvas.create_image(5, 5, image=self._tower_img, anchor=tk.NW)
 
         if not isinstance(displayTower, ITower):
             return None
 
-        self.currentButtons.extend(_gen_draw_info_buttons(self.canvas))
+        self._btns.extend(_gen_draw_info_buttons(self.canvas))
 
-        self.currentButtons.extend(_gen_draw_misc_buttons(self.canvas, displayTower))
+        self._btns.extend(_gen_draw_misc_buttons(self.canvas, displayTower))
 
-        self.currentButtons[displayTower.targetList].paint(self.canvas)
+        self._btns[displayTower.targetList].paint(self.canvas)
         if displayTower.stickyTarget:
-            self.currentButtons[4].paint(self.canvas)
+            self._btns[4].paint(self.canvas)
 
     def displayGeneric(self, selectedTower: str):
-        self.currentButtons = []
+        self._btns = []
         if selectedTower == "<None>":
             self.text = None
-            self.towerImage = None
+            self._tower_img = None
         else:
             self.text = selectedTower + " cost: " + str(tower.cost(selectedTower))
-            self.towerImage = tower.load_img(selectedTower)
+            self._tower_img = tower.load_img(selectedTower)
         self.canvas.delete(tk.ALL)  # clear the screen
         self.canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
         self.canvas.create_text(80, 75, text=self.text if self.text else '')
-        self.canvas.create_image(5, 5, image=self.towerImage, anchor=tk.NW)
+        self.canvas.create_image(5, 5, image=self._tower_img, anchor=tk.NW)
 
 
 def _gen_draw_info_buttons(canvas: tk.Canvas) -> Iterable[Button]:
@@ -175,18 +175,18 @@ class Displayboard:
             master=frame, width=600, height=80, bg="gray", highlightthickness=0
         )
         self.canvas.grid(row=2, column=0)
-        self.healthbar = Healthbar(stats.health)
-        self.moneybar = Moneybar(stats.money)
+        self._healthbar = Healthbar(stats.health)
+        self._moneybar = Moneybar(stats.money)
         self.nextWaveButton = buttons.NextWaveButton()
 
     def update(self, stats: game.Stats) -> None:
-        self.healthbar.update(stats.health)
-        self.moneybar.update(stats.money)
+        self._healthbar.update(stats.health)
+        self._moneybar.update(stats.money)
 
     def paint(self, color: str) -> None:
         self.canvas.delete(tk.ALL)  # clear the screen
-        self.healthbar.paint(self.canvas)
-        self.moneybar.paint(self.canvas)
+        self._healthbar.paint(self.canvas)
+        self._moneybar.paint(self.canvas)
         self.nextWaveButton.paint(self.canvas, color)
 
 
@@ -236,13 +236,13 @@ class Towerbox:
         for _ in range(50):
             self.box.insert(tk.END, "<None>")
         self.box.grid(row=1, column=1, rowspan=2)
-        self.box.bind("<<ListboxSelect>>", self.onselect)
+        self.box.bind("<<ListboxSelect>>", self._onselect)
 
     @property
     def is_selected(self) -> bool:
         return self.selected != '<None>'
 
-    def onselect(self, _):
+    def _onselect(self, _):
         self.selected = str(self.box.get(self.box.curselection()))
         self.tower_map.displayed = None
         self.infoboard.displayGeneric(self.selected)

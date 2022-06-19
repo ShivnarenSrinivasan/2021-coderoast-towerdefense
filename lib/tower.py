@@ -107,7 +107,7 @@ class Tower(ABC):
         self.targetList = 0
         self.stickyTarget = False
         self.name: str
-        self.upgradeCost: int
+        self.upgradeCost: int | None
         self._projectiles: list[IProjectile] = []
 
     @abstractmethod
@@ -160,7 +160,7 @@ class ITower(Protocol):
     targetList: int = 0
     stickyTarget: bool
     name: str
-    upgradeCost: int
+    upgradeCost: int | None
 
     def upgrade(self) -> None:
         ...
