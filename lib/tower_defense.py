@@ -38,7 +38,7 @@ class TowerDefenseGame(Game):
         self,
         title: str = "Tower Defense",
         grid_dim: Dimension = Dimension(30),
-        block_dim: Dimension = block_dim,
+        block_dim: Dimension = Dimension(20),
         map_name: str = 'LeoMap',
     ):
         """Create Tower Defense game.

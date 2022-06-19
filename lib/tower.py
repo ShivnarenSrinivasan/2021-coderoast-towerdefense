@@ -25,7 +25,7 @@ from .projectile import (
 )
 
 
-class ITowerMap(Protocol):
+class ITowerMap(GameObject, Protocol):
     displayed: ITower | None
 
     def __iter__(self) -> Iterable[grid.Point]:
