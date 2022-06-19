@@ -25,6 +25,7 @@ from .projectile import (
 )
 
 
+@runtime_checkable
 class ITowerMap(GameObject, Protocol):
     displayed: ITower | None
 
@@ -380,14 +381,14 @@ def load_img(tower: ITower | Tower | str) -> ImageTk.PhotoImage:
         case Tower():
             img_fp = Path(f'tower/{tower.__class__.__name__}/{tower.level}.png')
         case str():
-            img_fp = Path(f'tower/{towers[tower]}/1.png')
+            img_fp = Path(f'tower/{_towers[tower]}/1.png')
         case _:
             raise ValueError(f"Unhandled type {type(tower)}")
 
     return io.load_img_tk(img_fp)
 
 
-towers = {
+_towers = {
     "Arrow Shooter": "ArrowShooterTower",
     "Bullet Shooter": "BulletShooterTower",
     "Tack Tower": "TackTower",
