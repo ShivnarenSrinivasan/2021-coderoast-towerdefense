@@ -49,8 +49,8 @@ class TowerDefenseGame(Game):
 
         self.displayboard = display.Displayboard(self.frame, self.stats)
         tower_map = tower.TowerMap()
-        infoboard = display.Infoboard(self.frame, tower_map)
-        self.towerbox = display.Towerbox(self.frame, infoboard, tower_map)
+        infoboard = display.Infoboard(self.frame, tower_map)  # type: ignore
+        self.towerbox = display.Towerbox(self.frame, infoboard, tower_map)  # type: ignore
         self.grid = self._load_grid(map_name)
         self.monsters: list[IMonster] = []
 
@@ -136,7 +136,7 @@ class Wavegenerator:
             if block.is_path(self._game.grid[0][y]):
                 self._gridy = y
                 spawnx = 0
-                spawny = y * self._game.block_dim + self._game.block_dim / 2
+                spawny = y * self._game.block_dim + self._game.block_dim / 2  # type: ignore
                 return grid.Loc(spawnx, spawny)
 
         raise ValueError('Some invalid config of blocks')
