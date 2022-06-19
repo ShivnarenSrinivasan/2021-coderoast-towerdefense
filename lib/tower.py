@@ -1,7 +1,10 @@
 from __future__ import annotations
 import tkinter as tk
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Protocol
 
 from PIL import ImageTk
 
@@ -9,6 +12,64 @@ from . import (
     grid,
     io,
 )
+from .protocols import GameObject
+
+
+class ITowerMap(Protocol):
+    def __iter__(self) -> Iterable[grid.Point]:
+        ...
+
+    def __getitem__(self, p: grid.Point) -> Tower:
+        ...
+
+    def __contains__(self, p: grid.Point) -> bool:
+        ...
+
+    def __len__(self) -> int:
+        ...
+
+    def __setitem__(self, p: grid.Point, tower: Tower) -> None:
+        ...
+
+    def remove(self, tower: Tower) -> None:
+        ...
+
+
+@dataclass(order=False)
+class TowerMap(GameObject):
+    _towers: dict[grid.Point, Tower] = field(default_factory=dict)
+
+    def __iter__(self) -> Iterable[grid.Point]:
+        yield from self._towers
+
+    def __getitem__(self, p: grid.Point) -> Tower:
+        return self._towers[p]
+
+    def __contains__(self, p: grid.Point) -> bool:
+        return p in self._towers
+
+    def __len__(self) -> int:
+        return len(self._towers)
+
+    def __setitem__(self, p: grid.Point, tower: Tower) -> None:
+        if p in self._towers:
+            raise KeyError(f'Point {p} already taken!')
+        self._towers[p] = tower
+
+    def update(self) -> None:
+        for tower in self._towers.values():
+            tower.update()
+
+    def paint(self, canvas: tk.Canvas) -> None:
+        for tower in self._towers.values():
+            tower.paint(canvas)
+
+    def remove(self, tower: Tower) -> None:
+        for point, _tower in self._towers.items():
+            if _tower == tower:
+                self._towers.pop(point)
+                return None
+        raise KeyError(f'No such tower {tower} found.')
 
 
 class Tower(ABC):

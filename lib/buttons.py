@@ -27,7 +27,7 @@ class Button(ABC):
         return is_within_bounds(self, point)
 
     @abstractmethod
-    def press(self, tower_map: dict[grid.Point, tower.Tower]) -> None:
+    def press(self, tower_map: tower.ITowerMap) -> None:
         """Implement press functionality."""
 
     def paint(self, canvas: tk.Canvas) -> None:
