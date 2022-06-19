@@ -358,29 +358,35 @@ class Infoboard:
 
         _draw_info_buttons(self.canvas)
 
-        self.currentButtons.append(StickyButton(*buttons.make_coords(10, 40, 19, 49)))
-        self.currentButtons.append(SellButton(*buttons.make_coords(5, 145, 78, 168)))
-        if displayTower.upgradeCost:
-            self.currentButtons.append(
-                UpgradeButton(*buttons.make_coords(82, 145, 155, 168))
-            )
-            self.canvas.create_text(
-                120,
-                157,
-                text="Upgrade: " + str(displayTower.upgradeCost),
-                font=("times", 12),
+        def _misc_buttons(canvas: tk.Canvas, tower_: TargetingTower) -> Iterable[Button]:
+            btns: list[Button] = [
+                StickyButton(*buttons.make_coords(10, 40, 19, 49)),
+                SellButton(*buttons.make_coords(5, 145, 78, 168)),
+            ]
+
+            if tower_.upgradeCost:
+                btns.append(UpgradeButton(*buttons.make_coords(82, 145, 155, 168)))
+                canvas.create_text(
+                    120,
+                    157,
+                    text="Upgrade: " + str(tower_.upgradeCost),
+                    font=("times", 12),
+                    fill="light green",
+                    anchor=tk.CENTER,
+                )
+
+            canvas.create_text(
+                28,
+                146,
+                text="Sell",
+                font=("times", 22),
                 fill="light green",
-                anchor=tk.CENTER,
+                anchor=tk.NW,
             )
 
-        self.canvas.create_text(
-            28,
-            146,
-            text="Sell",
-            font=("times", 22),
-            fill="light green",
-            anchor=tk.NW,
-        )
+            return btns
+
+        self.currentButtons.extend(_misc_buttons(self.canvas, displayTower))
 
         self.currentButtons[displayTower.targetList].paint(self.canvas)
         if displayTower.stickyTarget:
